@@ -20,7 +20,7 @@ a one-off script that runs unattended.** The founder is asleep.
 ## Monday — Waitlist activation
 
 - 09:00 UTC: Resend campaign cron fires "It's ready" email,
-  segmented by locale (5 locales = 5 templates, all Claude-authored).
+  segmented by locale (5 locales = 5 templates, all Gemini-authored).
 - 12:00 UTC: X API cron posts a launch thread (queued; if X API not
   yet provisioned this step is skipped without blocking).
 - 15:00 UTC: Reddit cron posts to r/personalfinance with a value-first
@@ -28,7 +28,7 @@ a one-off script that runs unattended.** The founder is asleep.
   subreddit rules; throttle = 1 sub/day.
 - 18:00 UTC: First short-form clip auto-publishes (TikTok + Reels + Shorts).
 - Inbound email replies are handled by `/api/cron/inbound-mail-reply`:
-  Claude drafts + sends within 5 minutes of receipt; threads logged in
+  Gemini drafts + sends within 5 minutes of receipt; threads logged in
   Supabase `support_threads` table.
 
 Target: 50 paid conversions from waitlist (25% of 200).
@@ -40,9 +40,9 @@ Target: 50 paid conversions from waitlist (25% of 200).
 - 3 short-form clips publish (one per platform, staggered 4 hrs apart).
 - 5 new programmatic SEO pages auto-merge to main and deploy
   (`/api/cron/generate-pseo-pages` runs nightly during launch week).
-- AI in-app chat (Claude on `/api/chat`) handles all incoming questions
+- AI in-app chat (Gemini on `/api/chat`) handles all incoming questions
   with full doc context; escalates to founder inbox only if (a) refund
-  request > $79, (b) legal/press keyword detected, (c) Claude
+  request > $79, (b) legal/press keyword detected, (c) Gemini
   confidence < 0.6.
 
 ## Wednesday — Reddit + forums
@@ -81,7 +81,7 @@ embedded as JSON in the cron's config.
 
 - A Vercel Cron `weekly-digest` runs Sunday 18:00 UTC: aggregates
   PostHog funnels, finds the top 3 drop-off points, drafts a fix list,
-  opens GitHub issues against `main` with Claude-suggested patches.
+  opens GitHub issues against `main` with Gemini-suggested patches.
 - The founder reads the digest email on Sunday evening (~15 min) and
   approves the issues to merge.
 
@@ -100,7 +100,7 @@ embedded as JSON in the cron's config.
 | Resend bounce rate > 5%          | Cron pauses outbound, opens Sentry issue      |
 | Reddit account shadowbanned      | Cron detects via reply-visibility check, opens issue, founder appeals |
 | Stripe dispute > $500            | Auto-routes to founder inbox with draft reply |
-| Anthropic spend > daily cap      | Free-tier degrades to smaller model; paid queues |
+| Gemini spend > daily cap      | Free tier auto-falls back to Hugging Face; paid analyses queue |
 | Sentry error rate > 1%           | Auto-rollback last deploy if introduced today |
 
 The only steps requiring the founder are platform appeals and Stripe

@@ -3,7 +3,7 @@
 Format: 7-15 seconds. Hook in the first 1.5s. Pattern interrupt at 3s.
 On-screen text mandatory (60%+ of TikTok watches muted). End with soft CTA.
 
-**These are seed templates.** Claude generates new scripts daily by
+**These are seed templates.** Gemini generates new scripts daily by
 mutating these structures with fresh hooks, locales, and document types
 via `/api/cron/short-form-batch` — no human ever picks the next clip.
 
@@ -69,7 +69,7 @@ que você leia." → Reajuste por IGP-M sem teto após 12 meses.
 
 - 3 videos per platform per day = 9/day total
 - `/api/cron/short-form-batch` runs daily 06:00 UTC and produces all 9:
-  - Claude generates the script in the target locale + on-screen text
+  - Gemini generates the script in the target locale + on-screen text
   - ElevenLabs synthesizes the voiceover (multilingual voice IDs cached
     per locale for consistency)
   - ShortGPT or Pictory renders the 9:16 vertical with stock b-roll

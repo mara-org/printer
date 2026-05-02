@@ -4,19 +4,19 @@ All emails ≤ 80 words. Plain text feels human; resist the urge to add HTML
 banners. Subject lines are sentence-case, no emojis (cleaner inbox treatment).
 
 **Sender persona:** "PaperLens Team" from `team@paperlens.app`.
-**Inbound replies** to that address are handled by Claude via
-`/api/cron/inbound-mail-reply` (Resend inbound webhook → Claude → Resend
-send). Claude has access to the user's account, last 10 documents, and
+**Inbound replies** to that address are handled by Gemini via
+`/api/cron/inbound-mail-reply` (Resend inbound webhook → Gemini → Resend
+send). Gemini has access to the user's account, last 10 documents, and
 support knowledge base. Replies log to Supabase `support_threads`.
 
-Escalation rules (Claude opens a founder-inbox issue instead of
+Escalation rules (Gemini opens a founder-inbox issue instead of
 auto-replying) for:
 - Refund requests > $79
 - Legal / press / journalist keywords
-- Claude self-reported confidence < 0.6
+- Gemini self-reported confidence < 0.6
 - Repeat unresolved thread (>3 round-trips)
 
-Anything else: Claude replies within 5 minutes, 24/7. No "Founder"
+Anything else: Gemini replies within 5 minutes, 24/7. No "Founder"
 signature claims to read every reply — copy below uses "PaperLens"
 to be honest while staying warm.
 
