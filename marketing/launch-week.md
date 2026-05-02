@@ -13,7 +13,7 @@ a one-off script that runs unattended.** The founder is asleep.
 - `/api/cron/lifecycle-emails` is verified against Resend's preview API
   so the Monday "It's ready" wave fires correctly.
 - Sentry, PostHog, Stripe webhooks confirmed firing (synthetic test in
-  `/api/_health` hit by an external uptime cron).
+  `/api/health` hit by an external uptime cron).
 - Load test: GitHub Action `load-test.yml` runs k6 against
   `/api/analyze` at 50 concurrent uploads, fails the deploy if p95 > 8s.
 

@@ -1,0 +1,53 @@
+name: cron-cost-cap
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TARGET_URL: https://printer-olive.vercel.app
+
+jobs:
+  cost-cap:
+    name: cost-cap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call cost-cap route
+        id: call
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set +e
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "CRON_SECRET not set; skipping (configure in repo Settings → Secrets)"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/out -w '%{http_code}' \
+            -H "x-cron-secret: $CRON_SECRET" \
+            "$TARGET_URL/api/cron/cost-cap")
+          cat /tmp/out
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          # 404 is fine until route exists; 401/5xx is not
+          if [ "$code" = "404" ]; then
+            echo "route not yet implemented; ok"
+            exit 0
+          fi
+          [ "$code" = "200" ]
+      - name: Alert on real failure
+        if: failure() && steps.call.outputs.skipped != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "cron-cost-cap failing",
+              labels: ["incident", "auto", "cron"],
+              body: `cost-cap cron failed. Run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            });

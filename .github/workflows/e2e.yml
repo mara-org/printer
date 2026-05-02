@@ -1,0 +1,47 @@
+name: e2e
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Deployment URL to test"
+        required: true
+        default: "https://printer-olive.vercel.app"
+
+concurrency:
+  group: e2e-${{ github.event.deployment_status.deployment.url || github.event.inputs.url }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.deployment_status.state == 'success'
+    env:
+      TARGET_URL: ${{ github.event.deployment_status.target_url || github.event.inputs.url }}
+    steps:
+      - name: Health probe
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            code=$(curl -sS -o /tmp/body -w '%{http_code}' "$TARGET_URL/api/health" || echo 000)
+            if [ "$code" = "200" ]; then
+              cat /tmp/body
+              exit 0
+            fi
+            echo "attempt $i: HTTP $code; retrying"
+            sleep 5
+          done
+          echo "health probe failed"; exit 1
+      - name: Landing page renders
+        run: |
+          set -euo pipefail
+          html=$(curl -sSL "$TARGET_URL" | head -c 4000)
+          echo "$html" | grep -qi "paperlens" || { echo "landing copy missing"; exit 1; }
