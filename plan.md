@@ -33,12 +33,57 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 
 ## North star
 
-- **Month 6:** $5K MRR (~700 paid users at $6.99)
-- **Month 12:** $20K MRR ($240K ARR)
-- **Month 24:** $80K MRR ($960K ARR) via tiered pricing + app stores
-- **$1M ARR path:** B2C alone gets us to ~$500K. The second $500K is the Power
-  tier ($14.99) for power users + a thin self-serve API for partners. Both
-  ship as automated upgrades — no sales calls, no contracts.
+- **Month 6:** $5K MRR
+- **Month 12:** $25K MRR (~$300K ARR)
+- **Month 18:** $55K MRR (~$660K ARR) — Teams + API tiers ramp
+- **Month 24:** **$85K MRR (~$1.02M ARR)** — embed partners come online
+
+## How $1M actually breaks down (revenue stack)
+
+We do not get to $1M from one $6.99 plan. We layer five revenue streams,
+each automated, each unlocking on a measured trigger:
+
+| Stream | Plan | Target users | MRR target at Y2 | % of $1M |
+|---|---|---|---|---|
+| **B2C subs** | Pro $6.99 + Lifetime $79 | Renters, freelancers, immigrants, patients | $30K MRR (~4,300 Pro + 200 lifetime/mo) | 35% |
+| **B2C Power** | $14.99/mo, +50pg, bulk, API access | Immigration consultants, small landlords, freelance lawyers | $15K MRR (~1,000 Power) | 18% |
+| **Teams** | $29/mo flat (5 seats), $5/seat after | 2–10 person property mgmt, doctor offices, HR teams | $15K MRR (~500 Teams) | 18% |
+| **API** | Self-serve $99/mo (10K docs) and $499/mo (100K docs) | Rental platforms, insurance brokers, fintech onboarding | $20K MRR (~150×$99 + 12×$499) | 23% |
+| **Embed partners** | White-label widget; rev-share or $1K/mo flat | SaaS that wants "explain my doc" inside their app | $5K MRR (~10 partners) | 6% |
+| **Total Y2** | | | **~$85K MRR ≈ $1.02M ARR** | 100% |
+
+Annual plans (20% off) move ~30% of new B2C signups, lifting cash
+collected and lowering monthly churn. They're already created in
+Stripe; the toggle just isn't shown until pricing page ships.
+
+## Triggers that unlock each stream
+
+- **Pro/Lifetime**: shipped at week 4 (current sprint).
+- **Power $14.99**: shipped same day; pushed to power-users via email
+  trigger `analyzed_3_in_one_month`.
+- **Teams $29**: ships at $5K MRR. Why: by then we have proof a single
+  user paid; bundling 5 seats is the obvious next ask. Stripe Connect
+  not needed; just `quantity` on a subscription line.
+- **Self-serve API**: ships at $10K MRR. Adds a single page, an API
+  key issuer, and per-key rate limits in Upstash. The endpoint is the
+  same `/api/analyze` we already built.
+- **Embed widget**: ships at $20K MRR. A `<script>` snippet partners
+  drop into their own apps; revenue is rev-share via Stripe Connect or
+  a flat license. Distribution comes from us reaching out to the SaaS
+  companies whose users are already analyzing leases / contracts /
+  insurance docs through our affiliate program.
+
+Every trigger is a feature flag in `app_config`. No quarterly planning
+meetings — when MRR crosses the threshold, the cron flips the flag.
+
+## Why this hits $1M when v1 doesn't
+
+The original plan rested entirely on one $6.99 plan to ~12,000 users.
+That's a 4-year solo grind for a category with high churn. The five-
+stream version reaches $1M with **6,500 users at any tier**, of which
+most pay $14.99+ — far more achievable on the same SEO + ASO + short-
+form distribution. The B2B streams (API + Embed) carry 29% of revenue
+on ~170 customers; small numbers, real leverage.
 
 ## Free-first stack (locked)
 

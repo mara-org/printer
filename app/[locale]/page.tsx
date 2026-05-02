@@ -56,7 +56,33 @@ export default function LandingPage({
 
       <footer className="border-t border-ink/10 pt-8 text-xs text-ink/50">
         <p className="mb-2">{t.trust}</p>
-        <p>{t.legal}</p>
+        <p className="mb-3">{t.legal}</p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1">
+          <a
+            href="https://buymeacoffee.com/iammara"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-ink"
+          >
+            Support the team
+          </a>
+          <a
+            href="https://buymeacoffee.com/justabdulaziz10"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-ink"
+          >
+            Support the developer
+          </a>
+          <a
+            href="https://github.com/mara-org/printer"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-ink"
+          >
+            Source on GitHub
+          </a>
+        </p>
       </footer>
     </main>
   );
