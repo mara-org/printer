@@ -41,7 +41,7 @@ jobs:
           [ "$code" = "200" ]
       - name: Alert on real failure
         if: failure() && steps.call.outputs.skipped != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.create({
