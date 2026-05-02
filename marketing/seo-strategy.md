@@ -29,12 +29,19 @@ ar, hi, id, vi, th, ru.
 
 12 × 20 = 240 pages, each:
 - Title: "How to read a {document-type} (in plain {language})"
-- 800-1200 words of original content (Claude generates, native review)
+- 800-1200 words of original content (Claude generates; no human review
+  step — instead, an LLM-as-judge cron re-evaluates each page monthly
+  against a quality rubric and flags pages below threshold for regen)
 - Embedded mini-analyzer: paste an excerpt, get a free summary, no signup
 - 3 internal links: to two related doc-type pages + to /pricing
 - 1 external authoritative link (gov / legal aid / consumer protection)
 - Schema.org Article + FAQPage markup
 - hreflang tags between locale variants
+
+Generation is fully automated by `/api/cron/generate-pseo-pages`:
+Claude writes 5 pages/week, opens an auto-PR, CI runs lint + LLM-as-judge
+quality gate, auto-merges if both pass. After 240 pages the cron switches
+to refreshing the oldest pages monthly.
 
 ### Keyword targets per locale (sample)
 
@@ -50,13 +57,25 @@ ar, hi, id, vi, th, ru.
 Heavy reliance on long-tail in non-English markets where competition is
 near-zero and intent is extremely high.
 
-### Backlink plan
+### Backlink plan (no outreach, no guest posts)
 
-- 30 guest posts in year 1, 1/week after week 4
-- Targets: Reddit Wiki, NerdWallet-equivalents in each locale, immigrant
-  communities (e.g., InterNations, German-Way, Brazilian forums in EU)
-- HARO / Help-A-B2B-Writer: respond 5x/week with PaperLens-relevant quotes
-- Tenant rights NGOs: offer free integration; ask for footer link
+Outreach-based link-building requires human relationships. Excluded.
+Instead, links accrue from automated, value-creating surfaces:
+
+- **Affiliate program at `/affiliates`**: anyone (including bloggers,
+  YouTubers, NGOs) self-onboards, gets `?ref=` link, 30% rev-share
+  for 6 months via Stripe Connect. Bloggers organically link.
+- **Free embeddable widget at `/embed`**: any site can drop a
+  `<script>` tag and offer a 1-doc analyzer to their readers. The
+  widget includes a backlink. NGOs and tenant-rights orgs adopt it
+  organically because it provides real reader value.
+- **Linkable assets**: the cron generates a quarterly data report
+  ("State of leases 2026: 50,000 documents analyzed") published as a
+  static page, surfaced via the same SEO pipeline. Journalists and
+  bloggers link to data, not pitches.
+- **HARO / qwoted equivalent**: skipped. The reply quality required
+  to land citations needs human judgment and would burn the domain
+  if mass-replied by AI.
 
 ## App Store SEO
 
@@ -89,13 +108,20 @@ Localize per market. Examples:
 9. Testimonial (placeholder until we have real ones)
 10. CTA: "Free for 3 documents"
 
-### ASO sprint plan
+### ASO sprint plan (cron-driven)
 
-- Week 5: submit v1, English-only metadata to derisk review
-- Week 6: add DE, FR, ES, PT-BR after first approval
-- Week 7: add JA, KO, IT, NL after second update
-- Week 8: full 20-locale rollout
-- Weekly: AppFigures keyword tracking; iterate top 3 weak keywords/week
+- Week 5: founder submits v1 binary once (only manual step in ASO; the
+  store demands a human-signed submission). Metadata is English-only
+  to derisk first review.
+- Weeks 6–8: `/api/cron/aso-keyword-update` adds locales in waves via
+  the App Store Connect API + Google Play Developer API. No app
+  binary changes needed for metadata updates after the first one.
+- Weekly: the cron pulls AppFigures rankings, asks Claude for the
+  weakest keyword per locale, replaces it via the store APIs, and
+  records the swap in Supabase `aso_keyword_history` for attribution.
+- Screenshots are auto-rendered: a Next.js route renders the marketing
+  screen, Playwright on Vercel screenshots it per device + locale,
+  uploaded via the store APIs.
 
 ## Reporting
 

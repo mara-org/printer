@@ -3,6 +3,23 @@
 All emails ≤ 80 words. Plain text feels human; resist the urge to add HTML
 banners. Subject lines are sentence-case, no emojis (cleaner inbox treatment).
 
+**Sender persona:** "PaperLens Team" from `team@paperlens.app`.
+**Inbound replies** to that address are handled by Claude via
+`/api/cron/inbound-mail-reply` (Resend inbound webhook → Claude → Resend
+send). Claude has access to the user's account, last 10 documents, and
+support knowledge base. Replies log to Supabase `support_threads`.
+
+Escalation rules (Claude opens a founder-inbox issue instead of
+auto-replying) for:
+- Refund requests > $79
+- Legal / press / journalist keywords
+- Claude self-reported confidence < 0.6
+- Repeat unresolved thread (>3 round-trips)
+
+Anything else: Claude replies within 5 minutes, 24/7. No "Founder"
+signature claims to read every reply — copy below uses "PaperLens"
+to be honest while staying warm.
+
 ## Day 0 — Welcome
 
 Subject: You're in. Here's how to get the most from PaperLens.
@@ -16,9 +33,9 @@ keep meaning to read.
 You'll get the plain-language summary in ~10 seconds, with the risky
 parts highlighted. Free for your first 3 documents.
 
-Reply to this email if anything breaks. I read every one.
+Reply if anything breaks — we read every reply and respond fast.
 
-— [Founder]
+— PaperLens
 
 ## Day 1 — Tip
 
@@ -77,14 +94,24 @@ They get 30 days of Pro free. You get a month free for every signup.
 
 [Your link: paperlens.app/r/{code}]
 
+## Day 60 — Win-back (sent only if inactive 30+ days)
+
+Subject: A new doc type might help
+
+Since you last scanned, PaperLens added support for {top_new_doc_type}.
+If you've got one of those sitting around, it's a quick test.
+
+[Try it →]
+
 ## Churn save (cancellation flow)
 
 Subject: One question before you go
 
-You're cancelling — that's fine, no hard feelings. Quick thing: what was
-the one feature you wanted that PaperLens didn't have?
+You're cancelling — that's fine, no hard feelings. Quick thing: what
+was the one feature you wanted that PaperLens didn't have?
 
-Reply to this email. Two sentences is plenty. I read every reply, and the
-top three answers shape the next month's roadmap.
+Reply with two sentences. Every reply is read by our AI support agent
+and tagged into our roadmap signal — the top three pain points each
+month shape what ships next.
 
-— [Founder]
+— PaperLens

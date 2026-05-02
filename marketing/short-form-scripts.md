@@ -3,6 +3,10 @@
 Format: 7-15 seconds. Hook in the first 1.5s. Pattern interrupt at 3s.
 On-screen text mandatory (60%+ of TikTok watches muted). End with soft CTA.
 
+**These are seed templates.** Claude generates new scripts daily by
+mutating these structures with fresh hooks, locales, and document types
+via `/api/cron/short-form-batch` — no human ever picks the next clip.
+
 ## Series 1 — "Things hidden in your X"
 
 ### S1E1 — Lease auto-renewal
@@ -61,9 +65,22 @@ que você leia." → Reajuste por IGP-M sem teto após 12 meses.
 "Ton bail contient une clause que ton propriétaire ne veut pas que tu lises."
 → Clause d'indexation sur l'IRL avec rétroactivité illégale.
 
-## Cadence
+## Cadence (fully automated)
 
 - 3 videos per platform per day = 9/day total
-- Batch shoot weekly (Sunday): 21 scripts × 9 = 63 videos in 4 hours
-- Tools: CapCut for editing, Auto-Captions on, vertical 9:16
-- Always pin first comment with link to PaperLens
+- `/api/cron/short-form-batch` runs daily 06:00 UTC and produces all 9:
+  - Claude generates the script in the target locale + on-screen text
+  - ElevenLabs synthesizes the voiceover (multilingual voice IDs cached
+    per locale for consistency)
+  - ShortGPT or Pictory renders the 9:16 vertical with stock b-roll
+    pulled from Pexels API + auto-captions burned in
+  - The output is uploaded via:
+    - TikTok Content Posting API (sandbox-then-production approved app)
+    - Instagram Graph API (Reels container → publish endpoint)
+    - YouTube Data API v3 (Shorts upload)
+  - Pinned first comment is set via each platform's API where supported
+- Failures retry 3× with exponential backoff, then alert via Sentry.
+- The cron is idempotent: each script gets a deterministic ID stored in
+  Supabase `short_form_posts` so the same clip never double-posts.
+
+No batch shoots, no editor, no VA, no scheduling tool middleman.

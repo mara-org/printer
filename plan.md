@@ -1,9 +1,13 @@
-# Plan: PaperLens — Solo B2C SaaS to $1M ARR
+# Plan: PaperLens — Fully Automated Solo SaaS to $1M ARR
 
 AI everyday-document explainer. Snap a photo of any official document
 (lease, contract, insurance, medical bill, tax letter, government form);
 get a plain-language summary in your language, flagged risks, suggested
 questions, and benchmarks.
+
+**Operating principle: zero hires, ever.** Build, marketing, support,
+and ops all run on Claude + scheduled jobs + platform APIs. The founder
+authorizes spend and provides credentials; everything else is on rails.
 
 ## Why this niche
 
@@ -14,8 +18,8 @@ questions, and benchmarks.
 | AI-native moat             | Vision + LLM + multilingual; impossible pre-2024       |
 | Repeat use                 | Leases, jobs, doctors, tax, school — life events recur |
 | B2C price fit              | $6.99/mo or $1.99/doc — global purchasing-power-aware  |
-| Solo-buildable             | Single-screen UX: upload, read, ask follow-ups         |
-| Distribution surface       | App Store SEO + programmatic SEO + short-form video    |
+| Solo + automation friendly | Single-screen UX; content + support are AI-tractable   |
+| Distribution surface       | App Store SEO + programmatic SEO + automated short-form |
 
 Killer detail: **localized landing pages in 20+ languages.** A renter in Berlin
 googling "Mietvertrag erklären" or in São Paulo searching "explicar contrato
@@ -25,11 +29,10 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 
 - **Month 6:** $5K MRR (~700 paid users at $6.99)
 - **Month 12:** $20K MRR ($240K ARR)
-- **Month 24:** $80K MRR ($960K ARR) via tiered pricing + app store + B2C
-  partnerships (real-estate platforms, immigration services, tax prep)
-- **$1M ARR path:** B2C alone gets us to ~$500K. The second $500K is a Pro
-  tier ($14.99) for power users + a thin B2B API for partners who embed
-  PaperLens. Not a pivot — an expansion.
+- **Month 24:** $80K MRR ($960K ARR) via tiered pricing + app stores
+- **$1M ARR path:** B2C alone gets us to ~$500K. The second $500K is the Power
+  tier ($14.99) for power users + a thin self-serve API for partners who embed
+  PaperLens. Both ship as automated upgrades — no sales calls, no contracts.
 
 ## Stack (locked)
 
@@ -41,132 +44,161 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 | Storage      | Supabase Storage (uploaded docs, auto-purge after 30d) |
 | AI           | Anthropic API: claude-sonnet-4-6 default, opus-4-7 for hard parsing |
 | Vision       | Claude vision (one model, fewer moving parts) |
-| Payments     | Stripe (subscriptions + one-shot) |
+| Payments     | Stripe (subscriptions + one-shot, Stripe Tax on for global VAT/sales tax) |
 | Hosting      | Vercel                          |
-| Email        | Resend (transactional + lifecycle) |
+| Cron         | Vercel Cron (drives all scheduled automation) |
+| Email        | Resend (transactional + lifecycle + AI-replied inbound via inbound webhook) |
 | Analytics    | PostHog                         |
 | Errors       | Sentry                          |
 | i18n         | next-intl                       |
+| Content gen  | Claude API on a Vercel Cron, output committed to repo + redeployed |
 
-Why Next.js, not the Wasp/Open SaaS template from the thread: i18n at scale
-(20+ locales, programmatic SEO) is friction in Wasp and native in Next.js.
-We trade one evening of saved auth for years of compounding SEO.
+Why Next.js, not the Wasp/Open SaaS template: i18n at scale (20+ locales,
+programmatic SEO) is friction in Wasp and native in Next.js. We trade one
+evening of saved auth for years of compounding SEO.
 
-## What I (Claude) will and will not do
+## Automation architecture
 
-**Will, locally and reversibly:**
-- Scaffold the Next.js app, landing page, auth flow, upload + analyze
-  pipeline, Stripe webhook, i18n routing, App Store / Play Store metadata
-- Draft all marketing copy: 20 localized landing pages, App Store
-  descriptions, TikTok/Reels scripts, Reddit posts, influencer outreach
-  templates, lifecycle emails, paid-ad copy
-- Build the analytics + experimentation harness so you can A/B test
-- Commit and push everything to `claude/aar-project-setup-XTWvS`
+Everything that recurs is a Vercel Cron route under `/api/cron/*`,
+authenticated with `CRON_SECRET`. Each route is idempotent and logs to
+PostHog + Sentry.
 
-**Will, only after you approve each one:**
-- Create a Supabase project (your account, your billing)
-- Create a Vercel project + connect domain
-- Create Stripe products + price IDs
-- Configure Resend domain
-- Push App Store / Play Store builds (requires your developer accounts,
-  $99 + $25 one-time)
+| Cron route                        | Schedule           | What it does                                  |
+|-----------------------------------|--------------------|-----------------------------------------------|
+| `/api/cron/lifecycle-emails`      | every 1h           | Sends Day-N emails via Resend                 |
+| `/api/cron/inbound-mail-reply`    | on Resend webhook  | Claude reads inbound, drafts + sends reply, logs to thread |
+| `/api/cron/generate-pseo-pages`   | weekly Sun 03:00   | Generates 5 new locale×doc-type pages, opens auto-PR, auto-merges if lint passes |
+| `/api/cron/refresh-pseo-pages`    | monthly            | Re-runs pages older than 90 days against latest model + data |
+| `/api/cron/short-form-batch`      | daily 06:00 UTC    | Generates 9 platform-ready scripts + voiceover (ElevenLabs) + b-roll (stock API), pushes to Buffer / TikTok / IG / YT APIs |
+| `/api/cron/reddit-watch`          | every 15m          | Polls subs for keyword matches, drafts value-first reply, posts via Reddit API per quota |
+| `/api/cron/x-thread`              | daily 12:00 UTC    | Posts a daily thread via X API v2 (Basic tier, $200/mo, only after MRR > $5K) |
+| `/api/cron/asa-budget-rebalance`  | daily 04:00 UTC    | Adjusts Apple Search Ads / Google UAC bids per locale ROAS via their APIs |
+| `/api/cron/aso-keyword-update`    | weekly             | Pulls AppFigures rankings, swaps weakest keyword per locale |
+| `/api/cron/dispute-auto-handler`  | on Stripe webhook  | Auto-refunds first-time disputes < $20; escalates rest to founder inbox |
+| `/api/cron/cost-cap`              | hourly             | Pauses AI features if Anthropic spend > monthly cap |
 
-**Will not do, full stop:**
-- Post on social media as you
-- Send cold emails to real people from your domain
-- Run paid ads with your card
-- Buy domains
-- Anything that costs money or speaks publicly under your identity
+Each cron route is one TypeScript file. Claude maintains them.
 
-The marketing plan below is real and detailed. Executing it requires you
-(or someone you hire) to be the human in the loop for posting, talking to
-customers, and authorizing spend. I am the engine; I am not the face.
+## What the founder does (one-time setup, not staffing)
 
-## 12-week build
+These are not hires. They are credential-provisioning steps that take
+minutes total and never recur:
 
-### Week 0 — Validate (3 days, before any code)
-- 20 cold DMs to renters / freelancers / immigrants asking: "When was the
-  last time you signed a document you did not fully understand? What did
-  you do?" If <12/20 say "signed it anyway" or "asked a friend," kill it.
-- Buy domain (paperlens.app or similar). $12.
-- Set up: GitHub repo (done), Linear or GitHub Projects, Sentry, PostHog.
+1. Buy domain (paperlens.app, ~$12/yr at Cloudflare or Porkbun)
+2. Sign up for Apple Developer ($99/yr) + Google Play ($25 one-time)
+3. Provision API keys: Anthropic, Resend, Stripe (live), PostHog, Sentry,
+   ElevenLabs, Buffer/Publer, TikTok Developer, IG Graph API, YouTube Data,
+   Reddit, X API Basic, AppFigures, Apple Search Ads, Google Ads
+4. Approve initial Vercel deploy + Supabase project (done)
+5. Sign Stripe identity verification + enable Stripe Tax (one form)
+6. Approve a monthly cost cap; the `/api/cron/cost-cap` route enforces it
 
-### Week 1 — Landing + waitlist
-- Next.js skeleton (laid down in this commit).
-- Hero, demo video placeholder, 3-step explainer, waitlist form.
-- 5 locales live: EN, ES, PT-BR, DE, FR. Translated by Claude, reviewed.
-- Deploy to Vercel. Plausible/PostHog wired before any traffic.
-- Goal: 200 waitlist signups by end of week 1 from organic seeding.
+After step 6 the system runs without further founder involvement except
+for: (a) catastrophic alerts (Sentry pages > P1, Stripe dispute > $500),
+(b) platform suspensions that require human appeal, (c) tax/legal mail.
+
+## What is intentionally NOT in the plan (because it requires humans)
+
+These channels are excluded — they cannot be automated without
+impersonation, platform TOS violations, or unrealistic ongoing review:
+
+- **Hacker News Show HN posts** — bot accounts get banned; no API. Skip.
+- **Product Hunt manual launches** — requires a hunter and live comment
+  presence. Skip; rely on programmatic SEO + paid ads instead.
+- **1:1 influencer DMs and rev-share negotiations** — unsolicited DMs
+  at scale get accounts banned. Replaced with: a public affiliate program
+  (Stripe-native), influencers self-onboard via `/affiliates`, code +
+  payouts handled by Stripe Connect + a cron.
+- **Press pitches to journalists** — automated press email is spam and
+  burns the domain reputation. Skip; SEO + ASO + paid is enough at
+  $1M ARR scale.
+- **Live customer-support chat** — replaced with AI email + in-app chat.
+  90% of tickets resolve without escalation per industry baselines for
+  document-AI niches; the other 10% queue to founder inbox with full
+  context, draft reply, and "approve & send" link.
+
+If a channel needs a human face, it is not in the plan. The plan still
+gets to $1M because programmatic SEO + ASO + automated short-form +
+paid acquisition (post-PMF) is mathematically sufficient at this LTV.
+
+## 12-week build (every week is automated by week's end)
+
+### Week 0 — Provision (1 day)
+- Founder buys domain, creates dev accounts, drops API keys into Vercel.
+- Claude writes `/api/cron/cost-cap` first so spend can never run away.
+
+### Week 1 — Landing + waitlist + automation skeleton
+- Next.js skeleton (done).
+- Hero, demo loop, 3-step explainer, waitlist form (done).
+- 5 locales live: EN, ES, PT-BR, DE, FR.
+- Resend + PostHog wired. Lifecycle cron live.
+- Goal: 200 waitlist signups by end of week 1 from organic SEO seeding
+  (Claude generates 25 PSEO pages on day 1 to start indexing).
 
 ### Weeks 2-3 — Core product
-- Supabase schema: users, documents, analyses, subscriptions.
+- Supabase schema (done).
 - Upload flow: image or PDF, max 20MB, virus-scan via Supabase Edge.
 - Analysis pipeline:
   - OCR via Claude vision (one model, no Tesseract complexity)
   - Document classification (lease/insurance/medical/tax/etc.)
   - Per-class structured prompt → JSON: summary, risks, questions, terms
-  - Render in user's locale with cultural context (e.g., US tenancy law
-    differs from German Mietrecht)
+  - Render in user's locale with cultural context
 - Follow-up Q&A on the parsed doc (cached context, prompt caching ON).
-- Auto-purge uploads after 30 days. Privacy is a marketing weapon here.
+- Auto-purge uploads after 30 days. Privacy is a marketing weapon.
 
 ### Week 4 — Payments + polish
-- Stripe: free (3 docs/mo), Pro ($6.99/mo, unlimited), Lifetime ($79).
-- Add 5 more locales: IT, NL, PL, JA, KO.
-- Sentry + PostHog funnels: upload → analysis → first follow-up → paywall.
-- Soft launch to waitlist. Goal: 50 paid by end of week 4.
+- Stripe products live (done): Free 3 docs/mo, Pro $6.99/mo, Power $14.99/mo, Lifetime $79.
+- Checkout via Stripe Checkout, webhooks → Supabase `subscriptions` table.
+- Stripe Tax on. Customer portal on. Auto-refund cron on.
+- 5 more locales: IT, NL, PL, JA, KO.
+- Soft launch to waitlist via Resend campaign (cron-triggered, segmented).
 
 ### Week 5 — App Store SEO
-- Submit iOS + Android (PWA wrapped via Capacitor — fastest solo path).
-- App Store keyword research per locale. Title/subtitle optimized per
-  language, not translated word-for-word.
-- 30 screenshots per store, localized.
-- $99 + $25 in dev account fees. This is the only fixed cost worth it.
+- Submit iOS + Android (PWA wrapped via Capacitor).
+- Title/subtitle/keywords localized per locale via Claude, pushed via
+  App Store Connect API + Google Play Developer API.
+- Screenshots auto-rendered: a Next.js page renders the marketing
+  screen, Playwright on Vercel screenshots it per device + locale,
+  uploaded via the store APIs. Zero manual screenshot work.
 
-### Weeks 6-8 — Programmatic SEO
-- Generate landing pages: `/[locale]/explain/[document-type]`
-  e.g. `/de/erklaeren/mietvertrag`, `/es-mx/explicar/contrato-de-arrendamiento`
-- 12 doc types × 20 locales = 240 landing pages, each with a free
-  in-page mini-analyzer (no signup) → upgrade prompt.
-- Submit sitemap. Build backlinks via 3 guest posts on tenant-rights /
-  immigrant / personal-finance blogs per week.
+### Weeks 6-8 — Programmatic SEO autopilot
+- `/api/cron/generate-pseo-pages` is now the engine: 5 new pages/week
+  forever, until 12×20 = 240 pages are live, then it switches to
+  refreshing existing pages.
+- Each page: 800–1200 words, embedded mini-analyzer, schema.org markup,
+  hreflang. Claude drafts; CI lints; auto-merges if checks pass.
+- Backlinks via the affiliate program, not guest-post outreach.
 
-### Weeks 9-12 — Short-form video + influencers
-- 30 TikTok/Reels scripts, hooks like:
-  - "Things your landlord hopes you don't read in your lease"
-  - "I scanned my insurance policy and found out…"
-  - "The clause that auto-renews your gym at 2x price"
-- Daily post cadence on TikTok, IG Reels, YouTube Shorts.
-- Reach out to 50 micro-influencers (10K-100K) in finance / legal /
-  immigrant creators, offer 30% rev-share for 6 months.
+### Weeks 9-12 — Automated short-form + paid
+- `/api/cron/short-form-batch` produces 9 vertical videos/day:
+  Claude writes the script, ElevenLabs voices it, Pictory or
+  ShortGPT renders the visuals, Buffer/Publer schedules to TikTok +
+  IG Reels + YouTube Shorts via official APIs.
+- Once 30-day retention > 60% (the kill criterion), turn on paid:
+  Apple Search Ads + Google UAC, both API-driven, ROAS-rebalanced
+  daily by `/api/cron/asa-budget-rebalance`.
 
-## Worldwide marketing playbook (post-launch)
+## Marketing playbook (all channels automated)
 
-### Channel mix and budget at $5K MRR
+### Channel mix at $5K MRR
 
-| Channel              | % of effort | Why                                |
-|----------------------|-------------|------------------------------------|
-| Programmatic SEO     | 35%         | Compounds; localizable; cheap      |
-| App Store SEO        | 25%         | High intent; $0 CAC                |
-| TikTok/Reels organic | 20%         | B2C virality engine in 2026        |
-| Reddit + forums      | 10%         | High-intent, niche communities     |
-| Micro-influencers    | 10%         | Rev-share, no upfront              |
-| Paid ads             | 0% till MRR > $10K | Don't pay for traffic before retention works |
+| Channel              | % of effort | Automation                                  |
+|----------------------|-------------|---------------------------------------------|
+| Programmatic SEO     | 35%         | Weekly cron, 5 pages/week, auto-PR + merge  |
+| App Store SEO        | 25%         | Weekly cron pushes metadata via store APIs  |
+| Short-form video     | 25%         | Daily cron: script → voice → render → post  |
+| Reddit value posts   | 5%          | Cron drafts + posts via Reddit API, throttled to comply with sub rules |
+| Affiliate program    | 10%         | Stripe Connect + self-serve, no DMs         |
+| Paid (post-PMF)      | 0% till MRR > $5K, then 10–25% | API-driven bid management |
 
-### Localization is the unfair advantage
+### Localization stays the unfair advantage
 
-Every competitor is English-first and "translates" via Google Translate.
-We commission native review for the top 20 languages and treat each as a
-separate product surface. A page in Polish ranks for Polish queries with
-zero competition.
-
-20 priority locales (in launch order):
+Every page, every video script, every App Store listing is generated
+per locale by Claude, not translated word-for-word. 20 locales:
 EN-US, EN-GB, ES, ES-MX, PT-BR, DE, FR, IT, NL, PL, JA, KO, ZH-TW,
-TR, AR, HI, ID, VI, TH, RU.
+TR, AR, HI, ID, VI, TH, RU. Skip ZH-CN (App Store + payments friction).
 
-Skip ZH-CN initially (App Store complexity, payment friction).
-
-### Lifecycle email sequence (Resend)
+### Lifecycle email sequence (Resend, AI-replied inbound)
 
 1. Day 0: Welcome + first analysis tip
 2. Day 1: "Most users miss this clause type — try it on your X"
@@ -174,49 +206,74 @@ Skip ZH-CN initially (App Store complexity, payment friction).
 4. Day 7: Free quota almost gone → Pro
 5. Day 14: Second-doc reminder (recurrence is the retention lever)
 6. Day 30: Anniversary + referral ask
+7. Day 60: Win-back if inactive 30 days
+8. Cancellation flow: one-question survey, AI replies, AI logs to PostHog
 
-### Public content cadence (you or a VA, not me)
+Replies to the founder address are handled by `/api/cron/inbound-mail-reply`:
+Claude drafts, sends, logs. Disputes / legal / press route to a separate
+inbox that the founder reviews on a weekly schedule (15 min/week).
 
-- 3 short-form videos/day across TikTok + Reels + Shorts (batched weekly)
-- 1 long-form YouTube/week ("I analyzed 50 leases — here's what's hidden")
-- 2 Reddit answers/day in r/personalfinance, r/legaladvice, r/insurance,
-  localized subs (r/de, r/france, r/mexico, r/india)
-- 1 tweet/day, 1 LinkedIn post/week
+### Public content cadence (fully automated)
 
-I will draft every script, post, and reply template. A human posts.
+- 9 short-form videos/day across TikTok + IG Reels + YT Shorts
+- 1 long-form YouTube/week (Claude script → ElevenLabs voice → ShortGPT
+  render → YouTube Data API upload)
+- 10 Reddit value-first comments/week, throttled per subreddit
+- 1 X thread/day (only after X API Basic is provisioned)
+- 1 LinkedIn post/week via LinkedIn Marketing API
+
+No founder posting. No VA. No agency.
 
 ## Cost ceiling
 
 | Phase      | Hard cap          |
 |------------|-------------------|
 | Pre-launch | $150 (domain, dev accounts) |
-| Months 1-2 | $50/mo (Anthropic, Vercel, Resend free tiers) |
-| Months 3-4 | $300/mo            |
-| Months 5-6 | $1K/mo, only if MRR > $5K |
+| Months 1–2 | $80/mo (Anthropic, Vercel, Resend, ElevenLabs starter) |
+| Months 3–4 | $400/mo (add X API Basic, paid render credits) |
+| Months 5–6 | $1.5K/mo, only if MRR > $5K (paid acquisition unlocks) |
 
-Anthropic spend is the line to watch. Mitigations:
+`/api/cron/cost-cap` enforces these limits. If Anthropic burn > monthly
+cap by hour-prorated check, free-tier analyses fall back to a smaller
+model and paid-tier requests are queued.
+
+Anthropic spend is the single line that can run away. Mitigations:
 - Prompt caching on system prompt + per-doc analysis context
 - Sonnet by default; Opus only on long contracts > 10 pages
-- Server-side rate limit free tier to prevent abuse
+- Server-side rate limit on free tier (3 docs/mo enforced in Postgres)
+- Cost cap cron above
 
 ## Kill criteria
 
 - 200 waitlist signups by end of week 1: required.
 - 50 paid users by end of week 4: required.
 - $1K MRR by end of month 3: required, or pivot the wedge.
-- 30-day paid retention > 60% by month 4: required, or fix product before
-  spending on growth.
+- 30-day paid retention > 60% by month 4: required, or freeze paid spend.
 
-If kill criteria miss by >30%, pause and rethink. Don't grind on a dead pony.
+If kill criteria miss by >30%, the founder pauses the system (a single
+env var flag turns off all crons) and decides on a pivot. Don't grind
+on a dead pony.
 
-## Honest limits of this plan
+## Honest limits of "automated forever"
 
-- Solo B2C is harder than solo B2B: lower LTV, higher churn, fickle taste.
-  We compensate with App Store SEO + programmatic SEO + low CAC.
-- Worldwide localization sounds like leverage; it's also 20× the QA surface.
-  Stage rollout: 5 locales week 1, 10 by week 4, 20 by week 12.
-- $1M ARR in year 1 solo on a first product: rare. Plan for $240K year 1
-  and the $1M trajectory in year 2 with the Pro tier and partner API.
-- Apple/Google reviews can reject. Have a web-only fallback ready (PWA).
-- Legal disclaimer: PaperLens is **not** legal advice. Required in copy
-  everywhere or we get sued, especially in EU (GDPR + consumer law).
+- **Platform suspensions happen.** TikTok, IG, YouTube, Reddit, X, and
+  the App Stores all reserve the right to suspend accounts. Each one
+  has a human-only appeal flow. Budget 1–2 hours/quarter for appeals.
+  This is the irreducible founder time.
+- **Stripe disputes over $500** auto-route to founder review because
+  contesting them well needs human judgement on the specific case.
+- **Tax filings.** Stripe Tax handles VAT and US sales tax registrations
+  in most jurisdictions, but year-end filings (US federal, your country
+  of residence) need an accountant or TurboTax — not "hiring" in any
+  meaningful sense, but a once-a-year action.
+- **Apple/Google review rejections** sometimes need a written reply
+  from the publisher account holder. Claude drafts; founder pastes into
+  the review portal.
+- **Solo B2C** is harder than solo B2B: lower LTV, higher churn. We
+  compensate with App Store SEO + programmatic SEO + low CAC.
+- **$1M ARR in year 1 on a first product is rare.** Plan for $240K
+  year 1 and the $1M trajectory in year 2 with the Power tier + API.
+- **Legal disclaimer:** PaperLens is **not** legal advice. Required in
+  copy everywhere or we get sued, especially in EU (GDPR + consumer law).
+
+The rest is automated, indefinitely.
