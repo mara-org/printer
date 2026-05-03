@@ -30,7 +30,7 @@ public keys. To exercise `/api/analyze` locally you need
 - [ ] No secrets in the diff (gitleaks runs automatically)
 - [ ] Touches the analyze pipeline? Add or update a test in
       `lib/__tests__/`
-- [ ] Touches Stripe / billing? Note the test plan in the PR body
+- [ ] Touches Polar / billing? Note the test plan in the PR body
 - [ ] User-visible string change? Update all locale variants under
       `app/[locale]`
 

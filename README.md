@@ -26,11 +26,12 @@ This repository is **public** for transparency. Code is licensed under
 - **Next.js 14** (App Router) + Tailwind, hosted on **Vercel**
 - **Supabase** Postgres + Auth + Storage (free tier)
 - **Google Gemini 2.5 Flash** for analysis (free tier; Hugging Face fallback)
-- **Stripe** for payments (live mode, Stripe Tax on)
+- **Polar.sh** for payments (Merchant of Record; auto-collects VAT in
+  80+ countries; accepts Saudi sellers; ~4% + $0.40 per transaction)
 - **GitHub Actions** for all crons + CI/CD (unlimited free minutes on
   public repos)
 - **Edge TTS**, **Pexels**, **Cloudflare Turnstile**, **Upstash Redis**,
-  **Resend**, **Sentry**, **PostHog** — all free tiers
+  **Resend**, **Sentry**, **Vercel Analytics** — all free tiers
 
 Designed to run on **$0/month** until paid users justify upgrading
 individual pieces.
@@ -128,7 +129,7 @@ keep the lights on with coffee:
 
 - [`plan.md`](./plan.md) — Full $1M-ARR plan, marketing playbook, kill criteria
 - [`SETUP.md`](./SETUP.md) — Every manual step the founder needs to do
-- [`DEPLOYMENT.md`](./DEPLOYMENT.md) — Vercel + Stripe + Supabase deploy notes
+- [`DEPLOYMENT.md`](./DEPLOYMENT.md) — Vercel + Polar + Supabase deploy notes
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — How to file issues / send PRs
 - [`SECURITY.md`](./SECURITY.md) — Responsible disclosure
 - [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — How we treat each other
@@ -139,7 +140,7 @@ keep the lights on with coffee:
 
 The waitlist landing page + the `/api/analyze` pipeline (Gemini + HF
 fallback, with all gates) are live. The signed-in upload UI, pricing
-page, and Stripe Checkout ship in the next sprint. See `plan.md`
+page, and Polar.sh checkout ship in the next sprint. See `plan.md`
 "12-week build" for the schedule.
 
 ---

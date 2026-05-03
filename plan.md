@@ -10,7 +10,7 @@ questions, and benchmarks.
    AI + scheduled jobs + platform APIs.
 2. **Free until revenue.** Every component runs on a free tier until
    paid users justify upgrading that one component. No card on file
-   except Stripe (incoming) and Apple Developer (already paid).
+   except Polar (incoming payments) and Apple Developer (already paid).
 3. **CI/CD from day one, designed to last forever.** Every change is
    gated by automated checks; every cron has a kill switch; every
    external dependency has a circuit breaker.
@@ -53,8 +53,8 @@ each automated, each unlocking on a measured trigger:
 | **Total Y2** | | | **~$85K MRR ≈ $1.02M ARR** | 100% |
 
 Annual plans (20% off) move ~30% of new B2C signups, lifting cash
-collected and lowering monthly churn. They're already created in
-Stripe; the toggle just isn't shown until pricing page ships.
+collected and lowering monthly churn. They ship as a separate Polar
+product alongside the monthly product in the next sprint.
 
 ## Triggers that unlock each stream
 
@@ -62,13 +62,13 @@ Stripe; the toggle just isn't shown until pricing page ships.
 - **Power $14.99**: shipped same day; pushed to power-users via email
   trigger `analyzed_3_in_one_month`.
 - **Teams $29**: ships at $5K MRR. Why: by then we have proof a single
-  user paid; bundling 5 seats is the obvious next ask. Stripe Connect
+  user paid; bundling 5 seats is the obvious next ask. Polar affiliates
   not needed; just `quantity` on a subscription line.
 - **Self-serve API**: ships at $10K MRR. Adds a single page, an API
   key issuer, and per-key rate limits in Upstash. The endpoint is the
   same `/api/analyze` we already built.
 - **Embed widget**: ships at $20K MRR. A `<script>` snippet partners
-  drop into their own apps; revenue is rev-share via Stripe Connect or
+  drop into their own apps; revenue is rev-share via Polar affiliates or
   a flat license. Distribution comes from us reaching out to the SaaS
   companies whose users are already analyzing leases / contracts /
   insurance docs through our affiliate program.
@@ -97,8 +97,8 @@ on ~170 customers; small numbers, real leverage.
 | Storage | Supabase Storage | 1 GB | Delete uploaded files immediately after analysis (free tier); keep 30 days only for paid |
 | **AI (all tiers)** | **Google Gemini 2.5 Flash** (vision-capable, 1M context) | 1500 docs/day on free key | Paid Gemini tier 1 unlocks at ~$0.001/doc; cap set in Google Cloud billing |
 | **AI — fallback** | Hugging Face Inference (Llama-3.2-Vision, Qwen2-VL) via authed `justabdulaziz10` | Monthly free credits | Auto-routed only when Gemini quota exhausts mid-day |
-| Payments | Stripe live (Pro $6.99/mo, Power $14.99/mo, Lifetime $79) | Pay-as-you-go fees only | n/a |
-| Stripe Tax | On from day 1 — auto-collects + remits VAT/sales tax | Per-txn fee | n/a |
+| Payments | **Polar.sh** (Merchant of Record; KSA-friendly) — Pro $6.99/mo, Power $14.99/mo, Lifetime $79 | ~4% + $0.40/txn; no monthly fee | n/a |
+| Tax handling | Polar handles VAT/sales tax in 80+ countries automatically as the MoR | Included in Polar fee | n/a |
 | Email outbound | Resend | 3K/mo, 100/day | Move to Brevo or upgrade Resend at ~5K MAU |
 | Email inbound | Resend Inbound webhook → Gemini reply | Free | n/a |
 | Voice (TTS) | **Microsoft Edge TTS** (`edge-tts` lib) — no key needed | Unlimited | Move to ElevenLabs only after MRR > $5K, optional |
@@ -107,7 +107,7 @@ on ~170 customers; small numbers, real leverage.
 | Bot protection | Cloudflare Turnstile | Free, no limit | n/a |
 | Rate limit cache | Upstash Redis | 10K cmd/day | At ~5K active users |
 | Errors | Sentry | 5K events/mo | At ~5K users |
-| Analytics | PostHog | 1M events/mo | Probably never |
+| Analytics | Vercel Analytics | 2.5K events/mo on Hobby | Probably never |
 | **Cron / schedulers** | **GitHub Actions on the public repo** | **Unlimited free minutes** for public repos | Never |
 | CI/CD | GitHub Actions + Vercel Git integration | Free for public repos | Never |
 | Secret scan | gitleaks GitHub Action | Free | n/a |
@@ -174,7 +174,7 @@ Branch protection on `main` requires all of the above to pass.
 | Vercel auto-deploy | Vercel Git integration | Vercel rolls back automatically on build fail |
 | `/api/health` probe every 5 min | `health-check.yml` | After 3 consecutive fails: open GitHub issue + post Sentry event + Vercel alias rollback |
 | Synthetic analyze probe every 1 hr | `synthetic.yml` | Submits a known PDF, asserts JSON shape; fails open issue |
-| External-API contract tests | `contract-tests.yml` nightly | Detects breaking changes in Gemini/Stripe/Supabase APIs before they break prod |
+| External-API contract tests | `contract-tests.yml` nightly | Detects breaking changes in Gemini/Polar/Supabase APIs before they break prod |
 
 ### Spend safety (the "never lose money" layer)
 
@@ -223,7 +223,7 @@ the floor. You will never be billed more than that.
 ### Bus factor
 
 If the founder is unavailable for 30 days the system continues to:
-- accept paying customers (Stripe Checkout)
+- accept paying customers (Polar checkout)
 - analyze documents (Gemini 2.5 Flash for all tiers)
 - send lifecycle emails
 - post short-form video
@@ -232,7 +232,7 @@ If the founder is unavailable for 30 days the system continues to:
 
 Things that pause without a human:
 - Apple/Google review replies (rare)
-- Stripe disputes > $500 (auto-routed to inbox; no auto-action)
+- Polar disputes > $500 (auto-routed to inbox; no auto-action)
 
 Bus factor is "1 founder, but fine for a month."
 
@@ -253,11 +253,11 @@ Every recurring task is a GitHub Actions workflow under
 | `reddit-watch` | every 15 min | Polls subs for keyword matches, drafts value-first reply, posts via Reddit API per quota |
 | `x-thread` | daily 12:00 UTC | Posts daily thread via X API Free tier (500 posts/mo) |
 | `aso-keyword-update` | weekly | Pulls App Store Connect rankings, swaps weakest keyword per locale |
-| `dispute-auto-handler` | on Stripe webhook | Auto-refunds first-time disputes < $20; escalates rest |
+| `dispute-auto-handler` | on Polar webhook | Auto-refunds first-time disputes < $20; escalates rest |
 | `weekly-digest` | Sun 18:00 UTC | Aggregates funnels + drop-offs, opens GH issues with Gemini-suggested patches |
 | `health-check` | every 5 min | Hits `/api/health`; on fail, alerts + auto-rollback |
 | `synthetic-analyze` | hourly | End-to-end probe with known PDF |
-| `contract-tests` | nightly | Pings Gemini/Stripe/Supabase APIs to detect breaking changes |
+| `contract-tests` | nightly | Pings Gemini/Polar/Supabase APIs to detect breaking changes |
 
 ## What the founder does (one-time setup, not staffing)
 
@@ -267,18 +267,20 @@ never recur:
 1. ~~Buy domain~~ — using `printer-olive.vercel.app` until revenue.
 2. ✅ Apple Developer (already have).
 3. Provision API keys: **Gemini** (the critical one — aistudio.google.com,
-   free, instant), Resend, Stripe (live, ✅ products already created),
-   PostHog, Sentry, Pexels, Cloudflare Turnstile, TikTok Developer,
-   IG Graph API, YouTube Data, Reddit, X Free tier, Apple Search Ads,
-   Upstash Redis, Hugging Face (already authed via `justabdulaziz10`).
+   free, instant), Resend, **Polar.sh** (KSA-friendly MoR; products
+   created in the next sprint), Sentry, Pexels, Cloudflare Turnstile,
+   TikTok Developer, IG Graph API, YouTube Data, Reddit, X Free tier,
+   Apple Search Ads, Upstash Redis, Hugging Face (already authed via
+   `justabdulaziz10`). Vercel Analytics is enabled in the Vercel
+   dashboard with one click — no key needed.
 4. Set Google Cloud billing budget + hard cap on the Gemini API project.
 5. Confirm no card on file at Supabase (= can't be billed).
 6. Approve `KILL_SWITCH` env var defaults across Vercel + GitHub.
-7. Stripe: set Business Name to "PaperLens" (unblocks Payment Links),
-   enable Stripe Tax.
+7. Polar: create the organization, set display name to "PaperLens",
+   add a payout method. Polar handles VAT/sales tax automatically.
 
 After that the system runs without further founder involvement except
-for catastrophic alerts (Sentry P1, Stripe dispute > $500), platform
+for catastrophic alerts (Sentry P1, Polar dispute > $500), platform
 suspensions, and tax/legal mail. Expected: **~30 min/week** at steady
 state.
 
@@ -290,7 +292,7 @@ impersonation, TOS violations, or unrealistic ongoing review:
 - Hacker News Show HN posts (no API, bot accounts banned)
 - Product Hunt manual launches (needs hunter + live comment presence)
 - 1:1 influencer DMs (replaced by self-serve affiliate program at
-  `/affiliates`, payouts via Stripe Connect)
+  `/affiliates`, payouts via Polar affiliates)
 - Cold press pitches (replaced by SEO + paid)
 - Live customer-support chat (replaced by AI email + AI in-app chat)
 
@@ -299,7 +301,8 @@ If a channel needs a human face, it is not here.
 ## 12-week build (every week ends with green CI on every change)
 
 ### Week 0 — CI/CD scaffold + spend safety (1 day)
-- ✅ Stripe products live, Supabase schema, waitlist API.
+- ✅ Supabase schema, waitlist API, analyze pipeline. Polar products
+  created in week 4.
 - ✅ GitHub Actions CI/CD scaffold (`ci.yml`, `e2e.yml`, `secret-scan.yml`,
   `health-check.yml`, `cron-cost-cap.yml`, `dependabot.yml`).
 - Founder sets Google Cloud billing budget cap on the Gemini project.
@@ -329,9 +332,9 @@ If a channel needs a human face, it is not here.
 - Auto-purge uploads after analysis on free tier; 30 days on paid.
 
 ### Week 4 — Payments + 5 more locales
-- Stripe Checkout + webhook → Supabase `subscriptions`.
+- Polar checkout + webhook → Supabase `subscriptions`.
 - Customer portal on. Auto-refund cron on.
-- Stripe Tax on. Business Name set.
+- Polar tax handling on. Business Name set.
 - 5 more locales: IT, NL, PL, JA, KO.
 - Soft launch via Resend campaign cron.
 
@@ -345,7 +348,7 @@ If a channel needs a human face, it is not here.
 - `cron-generate-pseo-pages` engine: 5 new pages/week.
 - Each page: 800-1200 words, embedded mini-analyzer, schema.org markup,
   hreflang. Gemini drafts; CI lints; LLM-as-judge quality gate; auto-merge.
-- Affiliate program at `/affiliates` (Stripe Connect).
+- Affiliate program at `/affiliates` (Polar affiliates).
 
 ### Weeks 9-12 — Automated short-form + paid acquisition
 - `cron-short-form-batch` produces 9 vertical videos/day on GitHub
@@ -361,7 +364,7 @@ If a channel needs a human face, it is not here.
 | App Store SEO | 25% | App Store Connect API + Google Play Dev API |
 | Short-form video | 25% | Gemini script + **Edge TTS** + ShortGPT + Pexels + TikTok/IG/YT APIs |
 | Reddit value posts | 5% | Reddit API + Gemini |
-| Affiliate program | 10% | Stripe Connect |
+| Affiliate program | 10% | Polar affiliates |
 | Paid (post-PMF) | 0% till MRR > $5K | Apple Search Ads API, Google Ads API |
 
 20 priority locales: EN-US, EN-GB, ES, ES-MX, PT-BR, DE, FR, IT, NL,
@@ -376,7 +379,7 @@ PL, JA, KO, ZH-TW, TR, AR, HI, ID, VI, TH, RU. Skip ZH-CN (App Store
 | Months 1-2 | **$0–$10/mo** | Possibly paid Google for first dozen paying-tier analyses |
 | Months 3-4 | **$5–$30/mo** | Gemini paid tier 1 covering paid-user volume; everything else still free |
 | Months 5-6 | **$200/mo**, only if MRR > $5K | Google + maybe upgrade Resend |
-| Year 2 | scales linearly with MRR; gross margin target ≥ 85% | Google + Stripe fees |
+| Year 2 | scales linearly with MRR; gross margin target ≥ 85% | Google + Polar fees |
 
 `cost-cap` cron + Google Cloud billing budget enforce the ceilings.
 `Free user → Gemini` rule ensures free signups cannot cost us money.
@@ -400,8 +403,8 @@ revisits. Don't grind on a dead pony.
   free users without a code change.
 - **Platform suspensions** still happen. Each platform has a human-only
   appeal flow. Budget 1-2 hours/quarter for appeals.
-- **Stripe disputes > $500** auto-route to founder review.
-- **Tax filings.** Stripe Tax handles VAT and US sales tax registrations
+- **Polar disputes > $500** auto-route to founder review.
+- **Tax filings.** Polar tax handling handles VAT and US sales tax registrations
   in most jurisdictions; year-end filings need an accountant or TurboTax.
 - **Apple/Google review rejections** sometimes need a written reply
   from the publisher. Gemini drafts; founder pastes.

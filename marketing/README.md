@@ -24,11 +24,11 @@ automation — no humans, no hires.**
 | Inbound email reply | Gemini | Resend webhook     | Resend                   |
 | PSEO landing pages | Gemini | Cron weekly Sun 03:00 | Git PR + auto-merge → Vercel deploy |
 | App Store metadata | Gemini | Cron weekly        | App Store Connect API + Google Play Developer API |
-| Paid bid management | Cron logic on PostHog data | Cron daily 04:00 | Apple Search Ads API, Google Ads API |
+| Paid bid management | Cron logic on Vercel Analytics + analyze_calls SQL | Cron daily 04:00 | Apple Search Ads API, Google Ads API |
 
 ## What the founder provides, once
 
-API keys for: Gemini (Google AI Studio), Resend, Stripe (live), PostHog, Sentry,
+API keys for: Gemini (Google AI Studio), Resend, Polar.sh, Sentry,
 ElevenLabs, Buffer/Publer, TikTok Developer, IG Graph API,
 YouTube Data, Reddit, X (when ready), AppFigures, Apple Search Ads,
 Google Ads. Plus Apple Developer ($99/yr) + Google Play ($25 once).
@@ -43,7 +43,7 @@ presence and would burn the brand if faked:
 - Hacker News Show HN (no API, bot accounts banned)
 - Product Hunt manual launches (needs a hunter + live comment presence)
 - 1:1 influencer DMs (replaced by a self-serve affiliate program at
-  `/affiliates`, payouts via Stripe Connect)
+  `/affiliates`, payouts via Polar affiliates)
 - Cold press pitches (replaced by SEO + paid)
 - Live customer-support chat (replaced by AI email + AI in-app chat)
 
@@ -52,9 +52,9 @@ If a channel needs a human face, it is not here.
 ## What automation does not cover (the irreducible founder minutes)
 
 - Platform-suspension appeals (1–2 hrs/quarter expected)
-- Stripe disputes > $500 auto-route to founder inbox with a draft reply
+- Polar disputes > $500 auto-route to founder inbox with a draft reply
 - Apple/Google review rejections that need a written reply
-- Tax filings (annual; Stripe Tax handles VAT collection automatically)
+- Tax filings (annual; Polar tax handling handles VAT collection automatically)
 - Initial credential provisioning (one afternoon, once)
 
 Total expected ongoing founder time post-setup: **~30 min/week**.

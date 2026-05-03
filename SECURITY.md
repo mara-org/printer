@@ -24,7 +24,7 @@ In scope:
   future production domain
 - The code in this repository
 - The Supabase project, only via documented public surfaces
-- Stripe, Resend, and other third-party integrations only where the
+- Polar, Resend, and other third-party integrations only where the
   bug is in our code
 
 Out of scope:

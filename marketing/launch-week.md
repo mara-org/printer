@@ -12,7 +12,7 @@ a one-off script that runs unattended.** The founder is asleep.
   21-clip backlog scheduled to post Mon–Sun via TikTok / IG / YT APIs.
 - `/api/cron/lifecycle-emails` is verified against Resend's preview API
   so the Monday "It's ready" wave fires correctly.
-- Sentry, PostHog, Stripe webhooks confirmed firing (synthetic test in
+- Sentry, Vercel Analytics, Polar webhooks confirmed firing (synthetic test in
   `/api/health` hit by an external uptime cron).
 - Load test: GitHub Action `load-test.yml` runs k6 against
   `/api/analyze` at 50 concurrent uploads, fails the deploy if p95 > 8s.
@@ -52,7 +52,7 @@ Target: 50 paid conversions from waitlist (25% of 200).
   r/de, r/brasil, r/india.
 - 3 short-form clips publish.
 - The X cron (if enabled) reposts Monday's thread with new metrics
-  scraped from PostHog.
+  from Vercel Analytics.
 
 Rule encoded in the cron: every post is 80% value, 20% mention. Mods
 ban promo-first; the prompt enforces ratio + checks subreddit rules
@@ -61,7 +61,7 @@ embedded as JSON in the cron's config.
 ## Thursday — Affiliate program goes live
 
 - `/affiliates` page deploys: a self-serve form where any influencer
-  signs up, gets a `?ref=` link tied to a Stripe Connect account, and
+  signs up, gets a `?ref=` link tied to a Polar affiliates account, and
   earns 30% rev-share for 6 months on referred signups.
 - Cron posts the affiliate launch announcement to TikTok / Reels /
   Shorts and to relevant subs; influencers self-onboard.
@@ -73,14 +73,14 @@ embedded as JSON in the cron's config.
 - Press pitches are intentionally not in the playbook. They require
   human relationships and burn the domain reputation if automated.
 - Instead: a press kit page (`/press`) goes live (auto-generated:
-  founder photo placeholder, screenshots, key metrics from PostHog,
+  founder photo placeholder, screenshots, key metrics from Vercel Analytics,
   one-line pitch in 5 locales). Journalists who find us via SEO get
   what they need without an outbound email.
 
 ## Weekend — Watch and learn (also automated)
 
 - A Vercel Cron `weekly-digest` runs Sunday 18:00 UTC: aggregates
-  PostHog funnels, finds the top 3 drop-off points, drafts a fix list,
+  Vercel Analytics counters, finds the top 3 drop-off points, drafts a fix list,
   opens GitHub issues against `main` with Gemini-suggested patches.
 - The founder reads the digest email on Sunday evening (~15 min) and
   approves the issues to merge.
@@ -99,9 +99,9 @@ embedded as JSON in the cron's config.
 | TikTok API returns 429           | Cron backs off 1h, retries; alerts after 3 fails |
 | Resend bounce rate > 5%          | Cron pauses outbound, opens Sentry issue      |
 | Reddit account shadowbanned      | Cron detects via reply-visibility check, opens issue, founder appeals |
-| Stripe dispute > $500            | Auto-routes to founder inbox with draft reply |
+| Polar dispute > $500            | Auto-routes to founder inbox with draft reply |
 | Gemini spend > daily cap      | Free tier auto-falls back to Hugging Face; paid analyses queue |
 | Sentry error rate > 1%           | Auto-rollback last deploy if introduced today |
 
-The only steps requiring the founder are platform appeals and Stripe
+The only steps requiring the founder are platform appeals and Polar
 disputes > $500 — totaling under 30 min/week at steady state.

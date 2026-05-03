@@ -64,7 +64,7 @@ Instead, links accrue from automated, value-creating surfaces:
 
 - **Affiliate program at `/affiliates`**: anyone (including bloggers,
   YouTubers, NGOs) self-onboards, gets `?ref=` link, 30% rev-share
-  for 6 months via Stripe Connect. Bloggers organically link.
+  for 6 months via Polar affiliates. Bloggers organically link.
 - **Free embeddable widget at `/embed`**: any site can drop a
   `<script>` tag and offer a 1-doc analyzer to their readers. The
   widget includes a backlink. NGOs and tenant-rights orgs adopt it
@@ -125,7 +125,7 @@ Localize per market. Examples:
 
 ## Reporting
 
-Weekly dashboard (Looker / PostHog):
+Weekly dashboard (Looker / Vercel Analytics):
 - Organic search clicks per locale
 - App Store impressions / installs per locale
 - Programmatic page → signup conversion
