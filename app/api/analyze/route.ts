@@ -84,6 +84,10 @@ export async function POST(req: Request) {
   const mimeType = dl.data.type || "application/pdf";
 
   // 7. Insert a `documents` row (admin client; RLS would also allow it but we already verified ownership).
+  // Set purge_at tighter for free tier (1 day) than paid (30 days) so the storage-purge cron
+  // recovers space quickly from abuse / casual one-off uploads.
+  const purgeDays = quota.tier === "free" ? 1 : 30;
+  const purgeAt = new Date(Date.now() + purgeDays * 24 * 60 * 60 * 1000).toISOString();
   const admin = supabaseAdmin();
   const { data: docRow, error: docErr } = await admin
     .from("documents")
@@ -94,6 +98,7 @@ export async function POST(req: Request) {
       byte_size: arrayBuf.byteLength,
       source_locale: body.output_locale,
       status: "analyzing",
+      purge_at: purgeAt,
     })
     .select("id")
     .single();

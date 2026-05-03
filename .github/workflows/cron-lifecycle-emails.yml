@@ -1,0 +1,48 @@
+name: cron-lifecycle-emails
+
+on:
+  schedule:
+    - cron: "0 14 * * *"  # 14:00 UTC daily — sweet spot for global inbox open rates
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TARGET_URL: https://printer-olive.vercel.app
+
+jobs:
+  send:
+    name: send
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call lifecycle-emails route
+        id: call
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set +e
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "CRON_SECRET not set; skipping"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/out -w '%{http_code}' \
+            -H "x-cron-secret: $CRON_SECRET" \
+            "$TARGET_URL/api/cron/lifecycle-emails")
+          cat /tmp/out
+          echo
+          [ "$code" = "200" ] || [ "$code" = "404" ]
+      - name: Alert on real failure
+        if: failure() && steps.call.outputs.skipped != 'true'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "cron-lifecycle-emails failing",
+              labels: ["incident", "auto", "cron"],
+              body: `Run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            });

@@ -24,10 +24,9 @@ identity.
 
 ## Enforcement
 
-Reports go to **conduct@paperlens.app** (pre-domain: open a private
-GitHub Security Advisory). Maintainers will review and respond within
-7 days. Decisions are at the maintainers' discretion and may include
-warnings, temporary bans, or permanent bans.
+Reports go to **conduct@iammara.com**. Maintainers will review and
+respond within 7 days. Decisions are at the maintainers' discretion
+and may include warnings, temporary bans, or permanent bans.
 
 The full Contributor Covenant text is at:
 https://www.contributor-covenant.org/version/2/1/code_of_conduct/

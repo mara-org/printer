@@ -9,7 +9,8 @@ function getResend(): Resend | null {
   return _resend;
 }
 
-const FROM = process.env.RESEND_FROM ?? "PaperLens <onboarding@resend.dev>";
+const FROM = process.env.RESEND_FROM ?? "PaperLens <noreply@iammara.com>";
+const REPLY_TO = process.env.RESEND_REPLY_TO ?? "support@iammara.com";
 
 export async function sendWelcomeEmail(to: string): Promise<void> {
   const r = getResend();
@@ -30,7 +31,7 @@ export async function sendWelcomeEmail(to: string): Promise<void> {
     `— PaperLens`,
   ].join("\n");
   try {
-    await r.emails.send({ from: FROM, to, subject, text });
+    await r.emails.send({ from: FROM, to, subject, text, replyTo: REPLY_TO });
   } catch {
     // best-effort; signup succeeds even if email fails
   }

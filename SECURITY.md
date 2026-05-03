@@ -4,7 +4,7 @@
 
 Please do **not** open a public GitHub issue for security problems.
 
-Instead, email **security@paperlens.app** with:
+Instead, email **security@iammara.com** with:
 - A description of the issue
 - Steps to reproduce
 - The affected version / commit SHA
@@ -12,7 +12,8 @@ Instead, email **security@paperlens.app** with:
 
 If the email above is not yet active (we are still pre-domain), open
 a draft GitHub Security Advisory at:
-`https://github.com/mara-org/printer/security/advisories/new`
+`https://github.com/mara-org/printer/security/advisories/new` — or
+use **conduct@iammara.com** as the secondary inbox.
 
 We aim to acknowledge within **72 hours** and to ship a fix within
 **14 days** for high-severity issues.

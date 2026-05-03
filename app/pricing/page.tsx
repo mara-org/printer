@@ -2,7 +2,10 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PricingCTA } from "@/components/pricing-cta";
 import { cn } from "@/lib/utils";
+import { supabaseServer } from "@/lib/supabase-server";
+import { isPolarConfigured } from "@/lib/polar";
 
 export const metadata = {
   title: "Pricing — PaperLens",
@@ -12,12 +15,12 @@ export const metadata = {
 
 type Tier = {
   name: string;
+  product?: "pro" | "power" | "lifetime";
   price: string;
   period: string;
   highlight?: boolean;
   features: string[];
   ctaLabel: string;
-  comingSoon?: boolean;
 };
 
 const tiers: Tier[] = [
@@ -35,6 +38,7 @@ const tiers: Tier[] = [
   },
   {
     name: "Pro",
+    product: "pro",
     price: "$6.99",
     period: "/ month",
     highlight: true,
@@ -45,11 +49,11 @@ const tiers: Tier[] = [
       "Priority queue",
       "Analysis history search",
     ],
-    ctaLabel: "Coming soon",
-    comingSoon: true,
+    ctaLabel: "Upgrade to Pro",
   },
   {
     name: "Power",
+    product: "power",
     price: "$14.99",
     period: "/ month",
     features: [
@@ -59,24 +63,25 @@ const tiers: Tier[] = [
       "API access",
       "Side-by-side document compare",
     ],
-    ctaLabel: "Coming soon",
-    comingSoon: true,
+    ctaLabel: "Upgrade to Power",
   },
   {
     name: "Lifetime",
+    product: "lifetime",
     price: "$79",
     period: "one time",
-    features: [
-      "All Pro features",
-      "No recurring billing, ever",
-      "Pay once, use forever",
-    ],
-    ctaLabel: "Coming soon",
-    comingSoon: true,
+    features: ["All Pro features", "No recurring billing, ever", "Pay once, use forever"],
+    ctaLabel: "Buy Lifetime",
   },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const sb = supabaseServer();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  const configured = isPolarConfigured();
+
   return (
     <>
       <Header />
@@ -119,26 +124,30 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <button
-                  disabled={tier.comingSoon}
-                  className={cn(
-                    "mt-auto inline-flex h-10 w-full items-center justify-center rounded-xl text-sm font-medium transition",
-                    tier.highlight && !tier.comingSoon
-                      ? "bg-accent text-white hover:bg-accent/90"
-                      : "border border-ink/15 bg-white hover:border-ink/30",
-                    tier.comingSoon && "cursor-not-allowed opacity-60",
-                  )}
-                >
-                  {tier.ctaLabel}
-                </button>
+                {tier.product ? (
+                  <PricingCTA
+                    product={tier.product}
+                    label={tier.ctaLabel}
+                    highlight={tier.highlight}
+                    authed={Boolean(user)}
+                    configured={configured}
+                  />
+                ) : (
+                  <a
+                    href={user ? "/upload" : "/sign-in"}
+                    className="mt-auto inline-flex h-10 w-full items-center justify-center rounded-xl border border-ink/15 bg-white text-sm font-medium hover:border-ink/30"
+                  >
+                    {user ? "Go to upload" : tier.ctaLabel}
+                  </a>
+                )}
               </CardBody>
             </Card>
           ))}
         </div>
 
         <p className="mt-10 text-center text-sm text-ink/50">
-          Payments processed by Polar.sh as Merchant of Record. VAT/sales tax handled in 80+ countries.
-          Cancel anytime.
+          Payments processed by Polar.sh as Merchant of Record. VAT/sales tax handled in 80+
+          countries. Cancel anytime.
         </p>
       </main>
       <Footer />

@@ -3,7 +3,8 @@
 All emails ≤ 80 words. Plain text feels human; resist the urge to add HTML
 banners. Subject lines are sentence-case, no emojis (cleaner inbox treatment).
 
-**Sender persona:** "PaperLens Team" from `team@paperlens.app`.
+**Sender persona:** "PaperLens" from `noreply@iammara.com`
+(reply-to: `support@iammara.com`).
 **Inbound replies** to that address are handled by Gemini via
 `/api/cron/inbound-mail-reply` (Resend inbound webhook → Gemini → Resend
 send). Gemini has access to the user's account, last 10 documents, and

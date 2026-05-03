@@ -3,7 +3,9 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ManageSubscriptionButton } from "@/components/manage-subscription-button";
 import { supabaseServer } from "@/lib/supabase-server";
+import { isPolarConfigured } from "@/lib/polar";
 
 export const metadata = {
   title: "Dashboard — PaperLens",
@@ -40,7 +42,7 @@ export default async function DashboardPage() {
   } = await sb.auth.getUser();
   if (!user) return null;
 
-  const [{ data: profile }, { data: docs }] = await Promise.all([
+  const [{ data: profile }, { data: docs }, { data: sub }] = await Promise.all([
     sb
       .from("profiles")
       .select("free_docs_used, free_docs_reset_at")
@@ -52,6 +54,11 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50),
+    sb
+      .from("subscriptions")
+      .select("tier, status, current_period_end, cancel_at_period_end")
+      .eq("user_id", user.id)
+      .maybeSingle(),
   ]);
 
   const used = profile?.free_docs_used ?? 0;
@@ -59,6 +66,15 @@ export default async function DashboardPage() {
   const resetAt = profile?.free_docs_reset_at
     ? new Date(profile.free_docs_reset_at).toLocaleDateString()
     : null;
+  const tier = sub?.tier ?? "free";
+  const isPaid = tier !== "free" && (sub?.status === "active" || sub?.status === "trialing");
+  const polarOn = isPolarConfigured();
+  const tierLabel: Record<string, string> = {
+    free: "Free",
+    pro: "Pro",
+    power: "Power",
+    lifetime: "Lifetime",
+  };
 
   return (
     <>
@@ -66,9 +82,14 @@ export default async function DashboardPage() {
       <main className="mx-auto max-w-3xl space-y-6 px-6 py-12">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Your analyses</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-semibold tracking-tight">Your analyses</h1>
+              <Badge tone={isPaid ? "accent" : "default"}>{tierLabel[tier]}</Badge>
+            </div>
             <p className="mt-1 text-sm text-ink/60">
-              {remaining > 0 ? (
+              {isPaid ? (
+                <>Unlimited analyses on the {tierLabel[tier]} plan.</>
+              ) : remaining > 0 ? (
                 <>
                   {remaining} of 3 free analyses remaining this month
                   {resetAt ? ` · resets ${resetAt}` : ""}
@@ -83,12 +104,15 @@ export default async function DashboardPage() {
               )}
             </p>
           </div>
-          <Link
-            href="/upload"
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-ink px-5 text-base font-medium text-paper transition hover:bg-ink/85"
-          >
-            New analysis
-          </Link>
+          <div className="flex items-center gap-2">
+            {isPaid && polarOn && <ManageSubscriptionButton />}
+            <Link
+              href="/upload"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-ink px-5 text-base font-medium text-paper transition hover:bg-ink/85"
+            >
+              New analysis
+            </Link>
+          </div>
         </div>
 
         {!docs || docs.length === 0 ? (

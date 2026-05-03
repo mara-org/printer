@@ -79,6 +79,12 @@ export type Database = {
         }
         Relationships: []
       }
+      lifecycle_sends: {
+        Row: { sent_at: string; stage: string; user_id: string }
+        Insert: { sent_at?: string; stage: string; user_id: string }
+        Update: { sent_at?: string; stage?: string; user_id?: string }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string; email: string | null; free_docs_reset_at: string;
@@ -131,7 +137,17 @@ export type Database = {
         Relationships: []
       }
     }
-    Views: { [_ in never]: never }
+    Views: {
+      user_lifecycle: {
+        Row: {
+          days_since_last_analysis: number | null
+          days_since_signup: number | null
+          email: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       get_today_spend_usd: { Args: Record<string, never>; Returns: number }
       get_user_tier: { Args: { p_user_id: string }; Returns: Database["public"]["Enums"]["user_tier"] }
