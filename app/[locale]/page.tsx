@@ -4,6 +4,7 @@ import { copy, locales, type Locale } from "@/lib/i18n";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { HeroDemo } from "@/components/hero-demo";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabaseServer } from "@/lib/supabase-server";
@@ -33,47 +34,59 @@ export default async function LandingPage({
     <>
       <Header locale={locale} pathForLocaleSwitch={`/${locale}`} />
       <main>
-        {/* Hero */}
-        <section className="mx-auto max-w-3xl px-6 pb-10 pt-16 md:pt-24">
-          <h1 className="mb-6 text-5xl font-semibold tracking-tight md:text-6xl">{t.hero}</h1>
-          <p className="mb-8 max-w-xl text-lg text-ink/70">{t.sub}</p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={primaryHref}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-ink px-6 text-base font-medium text-paper transition hover:bg-ink/85"
-            >
-              {primaryLabel} →
-            </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-ink/15 bg-white px-6 text-base font-medium hover:border-ink/30"
-            >
-              {t.secondaryCta}
-            </Link>
+        {/* Hero with demo */}
+        <section className="mx-auto max-w-6xl px-6 pt-12 pb-12 md:pt-20">
+          <div className="grid gap-10 md:grid-cols-2 md:gap-12 md:items-center">
+            <div>
+              <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{t.hero}</h1>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink/70">{t.heroSub}</p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link
+                  href={primaryHref}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-ink px-6 text-base font-medium text-paper transition hover:bg-ink/85"
+                >
+                  {primaryLabel} →
+                </Link>
+                <a
+                  href="#demo"
+                  className="inline-flex h-12 items-center justify-center rounded-xl border border-ink/15 bg-white px-6 text-base font-medium hover:border-ink/30"
+                >
+                  {t.secondaryCta}
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-ink/50">
+                Free for 3 documents per month. No credit card.
+              </p>
+            </div>
+            <div id="demo" className="md:pl-4">
+              <HeroDemo videoSrc="/demo.mp4" />
+            </div>
           </div>
         </section>
 
-        {/* Trust strip */}
+        {/* Stats strip */}
         <section className="border-y border-ink/10 bg-white">
-          <div className="mx-auto grid max-w-5xl gap-3 px-6 py-5 text-sm text-ink/70 md:grid-cols-3">
-            {t.trustStrip.map((line, i) => (
-              <p key={i} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-                {line}
-              </p>
+          <div className="mx-auto grid max-w-5xl gap-6 px-6 py-8 sm:grid-cols-2 md:grid-cols-4">
+            {t.stats.map((s, i) => (
+              <div key={i}>
+                <p className="text-3xl font-semibold tracking-tight">{s.number}</p>
+                <p className="mt-1 text-sm text-ink/60">{s.label}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* 3-step */}
-        <section className="mx-auto max-w-3xl px-6 py-16">
-          <div className="grid gap-6 md:grid-cols-3">
-            {t.steps.map((step, i) => (
+        {/* What PaperLens actually finds */}
+        <section className="mx-auto max-w-5xl px-6 py-16">
+          <h2 className="mb-2 text-3xl font-semibold tracking-tight">{t.promiseHeading}</h2>
+          <p className="mb-8 max-w-2xl text-base text-ink/60">
+            Concrete things, not generic promises. Every analysis returns these by default.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {t.promises.map((p, i) => (
               <div key={i} className="rounded-2xl border border-ink/10 bg-white p-5">
-                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
-                  {i + 1}
-                </div>
-                <p className="text-sm text-ink/80">{step}</p>
+                <h3 className="text-base font-semibold tracking-tight">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink/70">{p.body}</p>
               </div>
             ))}
           </div>
@@ -94,12 +107,12 @@ export default async function LandingPage({
                   {locale === "en"
                     ? "12-month residential lease starting March 1. Monthly rent $2,150 with $4,300 security deposit. Auto-renews on month-to-month basis unless either party gives 60 days' written notice. Tenant pays utilities; landlord pays HOA. Pets allowed with $400 non-refundable fee."
                     : locale === "es"
-                      ? "Contrato de arrendamiento de 12 meses desde el 1 de marzo. Renta mensual $2,150 con depósito de seguridad de $4,300. Se renueva automáticamente mes a mes salvo aviso escrito con 60 días. El inquilino paga servicios; el propietario paga la HOA. Mascotas permitidas con tarifa no reembolsable de $400."
+                      ? "Contrato de arrendamiento de 12 meses desde el 1 de marzo. Renta mensual $2,150 con depósito de $4,300. Se renueva automáticamente mes a mes salvo aviso escrito con 60 días. El inquilino paga servicios; el propietario paga la HOA. Mascotas permitidas con tarifa no reembolsable de $400."
                       : locale === "pt-br"
-                        ? "Contrato de aluguel residencial de 12 meses a partir de 1º de março. Aluguel mensal de US$ 2.150 com caução de US$ 4.300. Renovação automática mês a mês, exceto com aviso por escrito de 60 dias. O inquilino paga as contas; o locador paga o condomínio. Pets permitidos com taxa não reembolsável de US$ 400."
+                        ? "Contrato de aluguel residencial de 12 meses a partir de 1º de março. Aluguel mensal de US$ 2.150 com caução de US$ 4.300. Renovação automática mês a mês, exceto com aviso por escrito de 60 dias. Pets permitidos com taxa não reembolsável de US$ 400."
                         : locale === "de"
-                          ? "12-monatiger Wohnungsmietvertrag ab dem 1. März. Monatliche Miete 2.150 $, Kaution 4.300 $. Verlängert sich automatisch monatlich, sofern keine Partei 60 Tage schriftlich kündigt. Mieter zahlt Nebenkosten; Vermieter zahlt Hausgeld. Haustiere mit nicht erstattbarer Gebühr von 400 $ erlaubt."
-                          : "Bail d'habitation de 12 mois à partir du 1er mars. Loyer mensuel 2 150 $ avec dépôt de garantie de 4 300 $. Renouvellement mensuel tacite sauf préavis écrit de 60 jours. Le locataire paie les charges ; le propriétaire paie les charges de copropriété. Animaux autorisés avec frais non remboursables de 400 $."}
+                          ? "12-monatiger Wohnungsmietvertrag ab dem 1. März. Monatliche Miete 2.150 $, Kaution 4.300 $. Verlängert sich automatisch monatlich, sofern keine Partei 60 Tage schriftlich kündigt. Haustiere mit nicht erstattbarer Gebühr von 400 $ erlaubt."
+                          : "Bail d'habitation de 12 mois à partir du 1er mars. Loyer mensuel 2 150 $ avec dépôt de 4 300 $. Renouvellement mensuel tacite sauf préavis écrit de 60 jours. Animaux autorisés avec frais non remboursables de 400 $."}
                 </p>
               </div>
               <div>
@@ -121,14 +134,45 @@ export default async function LandingPage({
                       <span className="text-sm font-medium">Non-refundable pet fee</span>
                     </div>
                     <p className="mt-1 text-sm text-ink/70">
-                      $400 fee is not held in escrow and is not returned even if the unit is left
-                      undamaged. In some states (e.g. CA, NJ) this clause is restricted.
+                      $400 fee not held in escrow and not returned even if the unit is left
+                      undamaged. Restricted in California, Oregon, and others.
                     </p>
                   </li>
                 </ul>
               </div>
             </CardBody>
           </Card>
+        </section>
+
+        {/* Why Pro pays you back */}
+        <section className="border-t border-ink/10 bg-white">
+          <div className="mx-auto max-w-5xl px-6 py-16">
+            <h2 className="mb-2 text-3xl font-semibold tracking-tight">{t.whyPayHeading}</h2>
+            <p className="mb-8 max-w-2xl text-base text-ink/60">{t.whyPaySub}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {t.whyPayExamples.map((ex, i) => (
+                <Card key={i}>
+                  <CardBody className="space-y-3 py-5">
+                    <Badge>{ex.docType}</Badge>
+                    <p className="text-sm font-semibold tracking-tight">PaperLens finds:</p>
+                    <p className="text-sm leading-relaxed text-ink/75">{ex.finds}</p>
+                    <p className="border-t border-ink/5 pt-3 text-xs text-ink/55">
+                      ↳ {ex.saved}
+                    </p>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+            <p className="mt-6 max-w-3xl text-xs text-ink/50">{t.whyPayCaveat}</p>
+            <div className="mt-6">
+              <Link
+                href={primaryHref}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-ink px-5 text-sm font-medium text-paper transition hover:bg-ink/85"
+              >
+                {primaryLabel} →
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* Doc-types row → links to PSEO pages */}
@@ -214,7 +258,7 @@ export default async function LandingPage({
           </div>
         </section>
 
-        {/* Waitlist (now small + opt-in for "more languages" updates) */}
+        {/* Waitlist (locale rollout updates) */}
         <section className="border-t border-ink/10 bg-white">
           <div className="mx-auto max-w-2xl px-6 py-12">
             <h2 className="text-lg font-semibold tracking-tight">{t.waitlistHeading}</h2>
@@ -224,7 +268,6 @@ export default async function LandingPage({
         </section>
       </main>
       <Footer />
-      {/* Page-level disclaimer */}
       <div className="mx-auto max-w-5xl px-6 pb-8 text-xs text-ink/50">
         <p className="mb-2">{t.trust}</p>
         <p>{t.legal}</p>
