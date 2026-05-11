@@ -52,7 +52,7 @@ jobs:
 
       - name: Open PR with new PSEO pages
         if: success()
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: cron/pseo-${{ github.run_id }}
