@@ -3,7 +3,18 @@ import { Resend } from "resend";
 const FROM = process.env.RESEND_FROM ?? "PaperLens <noreply@iammara.com>";
 const REPLY_TO = process.env.RESEND_REPLY_TO ?? "support@iammara.com";
 
-export type LifecycleStage = "day0" | "day1" | "day3" | "day7" | "day14" | "day30" | "day60_winback";
+export type LifecycleStage =
+  | "day0"
+  | "day1"
+  | "day3"
+  | "day7"
+  | "day14"
+  | "day30"
+  | "day60_winback"
+  | "power_upsell";
+
+// Behavioral trigger: Pro user analyzes ≥3 docs in last 30 days → pitch Power.
+export const POWER_UPSELL_MIN_ANALYSES_30D = 3;
 
 let _resend: Resend | null = null;
 function getResend(): Resend | null {
@@ -22,6 +33,7 @@ const SUBJECTS: Record<LifecycleStage, string> = {
   day14: "That document you keep putting off",
   day30: "One month with PaperLens",
   day60_winback: "A new doc type might help",
+  power_upsell: "You're using PaperLens like a pro — try Power",
 };
 
 const BODIES: Record<LifecycleStage, string> = {
@@ -85,6 +97,21 @@ const BODIES: Record<LifecycleStage, string> = {
     "around, it's a quick test.",
     "",
     "https://printer-olive.vercel.app/upload",
+  ].join("\n"),
+  power_upsell: [
+    "You've run a real workload through PaperLens in the last month —",
+    "more than most. Power was built for you.",
+    "",
+    "What you get on Power ($14.99/mo, or $144/yr — save 20%):",
+    " - 50+ page documents (full leases, full insurance policies)",
+    " - Bulk upload (10 docs at once)",
+    " - Side-by-side document compare",
+    " - API access for your own tools",
+    "",
+    "https://printer-olive.vercel.app/pricing",
+    "",
+    "If Power isn't the right shape, hit reply and tell us what's missing —",
+    "we read every reply.",
   ].join("\n"),
 };
 

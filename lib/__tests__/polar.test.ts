@@ -4,7 +4,9 @@ import { getProductId, isPolarConfigured, tierFromProductId } from "@/lib/polar"
 const ENV_KEYS = [
   "POLAR_ACCESS_TOKEN",
   "NEXT_PUBLIC_POLAR_PRODUCT_PRO",
+  "NEXT_PUBLIC_POLAR_PRODUCT_PRO_YEARLY",
   "NEXT_PUBLIC_POLAR_PRODUCT_POWER",
+  "NEXT_PUBLIC_POLAR_PRODUCT_POWER_YEARLY",
   "NEXT_PUBLIC_POLAR_PRODUCT_LIFETIME",
 ] as const;
 
@@ -49,5 +51,18 @@ describe("polar helpers", () => {
     expect(tierFromProductId("prod_pro")).toBe("pro");
     expect(tierFromProductId("prod_life")).toBe("lifetime");
     expect(tierFromProductId("prod_unknown")).toBeNull();
+  });
+
+  it("yearly products collapse to the same tier as monthly", () => {
+    process.env.NEXT_PUBLIC_POLAR_PRODUCT_PRO_YEARLY = "prod_pro_yr";
+    process.env.NEXT_PUBLIC_POLAR_PRODUCT_POWER_YEARLY = "prod_pwr_yr";
+    expect(tierFromProductId("prod_pro_yr")).toBe("pro");
+    expect(tierFromProductId("prod_pwr_yr")).toBe("power");
+  });
+
+  it("isPolarConfigured is true when only a yearly product is set", () => {
+    process.env.POLAR_ACCESS_TOKEN = "polar_oat_x";
+    process.env.NEXT_PUBLIC_POLAR_PRODUCT_PRO_YEARLY = "prod_pro_yr";
+    expect(isPolarConfigured()).toBe(true);
   });
 });

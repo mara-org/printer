@@ -53,14 +53,19 @@ each automated, each unlocking on a measured trigger:
 | **Total Y2** | | | **~$85K MRR ≈ $1.02M ARR** | 100% |
 
 Annual plans (20% off) move ~30% of new B2C signups, lifting cash
-collected and lowering monthly churn. They ship as a separate Polar
-product alongside the monthly product in the next sprint.
+collected and lowering monthly churn. **Shipped in Sprint 6** as a
+separate Polar product (`NEXT_PUBLIC_POLAR_PRODUCT_PRO_YEARLY`,
+`NEXT_PUBLIC_POLAR_PRODUCT_POWER_YEARLY`); the pricing page has a
+monthly/yearly toggle and the webhook collapses both products into the
+same DB tier so feature gating is unchanged.
 
 ## Triggers that unlock each stream
 
 - **Pro/Lifetime**: shipped at week 4 (current sprint).
 - **Power $14.99**: shipped same day; pushed to power-users via email
-  trigger `analyzed_3_in_one_month`.
+  trigger `analyzed_3_in_one_month`. **Shipped in Sprint 6** — the
+  lifecycle-emails cron now runs a second pass that emails any active
+  Pro user with ≥3 analyses in the last 30 days exactly once.
 - **Teams $29**: ships at $5K MRR. Why: by then we have proof a single
   user paid; bundling 5 seats is the obvious next ask. Polar affiliates
   not needed; just `quantity` on a subscription line.

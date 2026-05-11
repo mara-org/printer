@@ -12,7 +12,7 @@ export function PricingCTA({
   authed,
   configured,
 }: {
-  product: "pro" | "power" | "lifetime";
+  product: "pro" | "pro_yearly" | "power" | "power_yearly" | "lifetime";
   label: string;
   highlight?: boolean;
   authed: boolean;
