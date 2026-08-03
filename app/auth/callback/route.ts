@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/sign-in?error=missing_code", url.origin));
   }
 
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const { error } = await sb.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(

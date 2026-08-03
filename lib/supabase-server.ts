@@ -10,10 +10,10 @@ function envOrThrow(key: string): string {
 }
 
 // Server client bound to the user's session cookies. RLS applies as that user.
-export function supabaseServer() {
+export async function supabaseServer() {
   const url = envOrThrow("NEXT_PUBLIC_SUPABASE_URL");
   const key = envOrThrow("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  const store = cookies();
+  const store = await cookies();
   return createServerClient<Database>(url, key, {
     cookies: {
       get: (name) => store.get(name)?.value,

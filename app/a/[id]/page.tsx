@@ -33,8 +33,9 @@ const DOC_TYPE_LABEL: Record<string, string> = {
   other: "Document",
 };
 
-export default async function AnalysisPage({ params }: { params: { id: string } }) {
-  const sb = supabaseServer();
+export default async function AnalysisPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();
@@ -43,7 +44,7 @@ export default async function AnalysisPage({ params }: { params: { id: string } 
   const { data: doc } = await sb
     .from("documents")
     .select("id, status, detected_type, original_filename, mime_type, created_at")
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (!doc) notFound();
@@ -51,7 +52,7 @@ export default async function AnalysisPage({ params }: { params: { id: string } 
   const { data: row } = await sb
     .from("analyses")
     .select("summary, risks, questions, key_terms, output_locale, model")
-    .eq("document_id", params.id)
+    .eq("document_id", id)
     .maybeSingle();
 
   // Show a "still processing" state if the row isn't ready yet.

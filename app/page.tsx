@@ -22,8 +22,8 @@ function pickLocale(acceptLanguage: string | null): Locale {
   return defaultLocale;
 }
 
-export default function Root() {
-  const acceptLang = headers().get("accept-language");
+export default async function Root() {
+  const acceptLang = (await headers()).get("accept-language");
   const locale = pickLocale(acceptLang);
   redirect(`/${locale}`);
 }

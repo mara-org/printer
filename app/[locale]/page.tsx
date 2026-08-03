@@ -16,13 +16,13 @@ export function generateStaticParams() {
 export default async function LandingPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const locale = params.locale as Locale;
+  const locale = (await params).locale as Locale;
   if (!locales.includes(locale)) notFound();
   const t = copy[locale];
 
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();

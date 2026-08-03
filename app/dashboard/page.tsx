@@ -36,7 +36,7 @@ const STATUS_TONE: Record<string, "default" | "low" | "medium" | "high" | "accen
 };
 
 export default async function DashboardPage() {
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();

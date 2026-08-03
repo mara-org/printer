@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "polar_not_configured" }, { status: 503 });
   }
 
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();

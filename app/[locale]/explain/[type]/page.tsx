@@ -22,10 +22,11 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string; type: string };
+  params: Promise<{ locale: string; type: string }>;
 }): Promise<Metadata> {
-  const locale = params.locale as Locale;
-  const type = params.type as PseoType;
+  const { locale: rawLocale, type: rawType } = await params;
+  const locale = rawLocale as Locale;
+  const type = rawType as PseoType;
   if (!locales.includes(locale) || !(PSEO_TYPES as readonly string[]).includes(type)) {
     return {};
   }
@@ -52,16 +53,17 @@ export async function generateMetadata({
 export default async function ExplainPage({
   params,
 }: {
-  params: { locale: string; type: string };
+  params: Promise<{ locale: string; type: string }>;
 }) {
-  const locale = params.locale as Locale;
-  const type = params.type as PseoType;
+  const { locale: rawLocale, type: rawType } = await params;
+  const locale = rawLocale as Locale;
+  const type = rawType as PseoType;
   if (!locales.includes(locale) || !(PSEO_TYPES as readonly string[]).includes(type)) {
     notFound();
   }
   const page = loadPseoPage(locale, type);
   const t = copy[locale];
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();
