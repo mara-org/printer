@@ -1,0 +1,54 @@
+{
+  "meta_title": "How to read a health insurance policy (plain English) — PaperLens",
+  "meta_description": "Decode your health insurance policy. The five numbers that decide what you actually pay, what counts as 'covered', and the appeals you didn't know you could file.",
+  "h1": "How to read a health insurance policy (in plain English)",
+  "intro": "Health insurance documents are written to be both legally precise and intentionally confusing. Most people read the monthly premium and stop. That's the smallest of five numbers that decide what you'll actually pay this year. This guide walks through every section of a typical Summary of Benefits and Coverage (SBC) and the underlying policy. PaperLens can read your specific document in about ten seconds and flag the gaps — but here's what to look for yourself.",
+  "sections": [
+    {
+      "heading": "The five numbers that actually matter",
+      "body": "Premium is what you pay every month, even if you never see a doctor. Deductible is what you pay before insurance pays anything. Copay is a fixed dollar amount per visit ($30 for your GP, $60 for a specialist). Coinsurance is a percentage you pay after the deductible (typically 20%). Out-of-pocket maximum is the absolute most you'll pay in one year for covered care; everything above that is 100% on the insurer. These numbers compose. Example: $400 premium, $4,000 deductible, 20% coinsurance, $8,000 out-of-pocket max. If you're hospitalized for $50,000, you owe: $4,000 (deductible) + 20% of the next $20,000 = $4,000 + $4,000 = $8,000. The $8,000 max caps it; the insurer pays the remaining $42,000."
+    },
+    {
+      "heading": "In-network vs. out-of-network — the trap everyone falls into",
+      "body": "Insurance plans negotiate prices with a list of doctors and hospitals — the 'network'. Visit one inside the network and your insurance applies. Visit one outside, and you might owe the entire bill, even with the same insurance card in your wallet. Two non-obvious cases: (1) the hospital is in-network but the anesthesiologist who shows up that day is out-of-network — you get a separate bill. The federal No Surprises Act (2022) blocks most of these for emergencies and in-network facilities, but exceptions exist. (2) Your doctor sends a sample to an out-of-network lab. Always ask: 'will every provider on this case be in-network?' Get it in writing if it matters."
+    },
+    {
+      "heading": "What 'covered' really means",
+      "body": "Covered care is what insurance will pay something toward — not necessarily everything. Mental health, fertility, weight-loss medication, physical therapy past 20 visits, brand-name drugs when a generic exists, second opinions: all are commonly excluded or limited even in plans that 'cover' them. Read the EOC (Evidence of Coverage) booklet, not just the SBC summary. Look for the word 'medically necessary' — insurers use it to deny claims that fall in the gray zone. Pre-authorization (you get insurer approval before the procedure) is required for many expensive things; if you skip it, the claim can be denied even for covered care."
+    },
+    {
+      "heading": "Drug formularies and the four tiers",
+      "body": "Plans organize prescription drugs into tiers: Tier 1 (generic, cheapest), Tier 2 (preferred brand-name), Tier 3 (non-preferred brand), Tier 4 (specialty drugs — sometimes thousands per month). Your formulary changes year-to-year. A drug that was Tier 1 in 2025 might move to Tier 3 in 2026 — your cost triples without the plan changing. Check your maintenance medications against the formulary at re-enrollment. If a critical drug moves up a tier, you can file a formulary exception with a letter from your prescribing doctor; insurers approve roughly 50% of these."
+    },
+    {
+      "heading": "Appeals — the right most people don't use",
+      "body": "If a claim is denied, you have the right to appeal. Internal appeal first (the insurer reviews its own decision) — you have 180 days to file. If denied again, external appeal (an independent reviewer outside the insurance company) — typically 60 days. About 40% of external appeals are decided in the patient's favor. The appeal letter should restate the medical necessity, attach any new documentation, and quote the policy section that supports coverage. Many denials are reversed simply because the patient appeals; insurers count on most people not filing."
+    }
+  ],
+  "faq": [
+    {
+      "q": "What's the difference between HMO, PPO, and EPO plans?",
+      "a": "HMO requires a primary-care doctor who refers you to specialists; out-of-network care isn't covered except in emergencies. PPO lets you see any doctor, in-network costs less, but out-of-network is partially covered. EPO is in between — no referrals needed, but no out-of-network coverage. Lower premiums usually mean tighter networks."
+    },
+    {
+      "q": "When does the deductible reset?",
+      "a": "On January 1 for most plans, or on the policy's anniversary date. If you have an expensive procedure scheduled, December is often better than January — you may have already met the deductible from earlier-year care."
+    },
+    {
+      "q": "Can I get charged a higher rate as 'self-pay' than insurance pays?",
+      "a": "Yes, and many providers' 'list price' is 2–5x what insurance reimburses. Always ask for the 'self-pay rate' or 'cash price' — for routine visits it's often lower than your deductible-pre-insurance cost. The hospital is allowed to negotiate, even with insurance."
+    },
+    {
+      "q": "What is an EOB and should I read it?",
+      "a": "EOB stands for Explanation of Benefits — the document you get after a claim is processed. It is not a bill. It shows what was billed, what insurance paid, and what you owe (which the provider will bill separately). Compare every EOB to the actual bill — billing errors are common. PaperLens can flag duplicate charges and miscoded procedures in seconds."
+    },
+    {
+      "q": "What happens if I lose my job?",
+      "a": "COBRA lets you keep the same employer plan for 18–36 months — but you pay the full premium plus 2%, often $700–$2,000/month. Marketplace (ACA) plans are usually much cheaper if your income drops, with subsidies based on the lower income. Don't auto-elect COBRA; price both."
+    }
+  ],
+  "cta_label": "Scan your policy in 10 seconds",
+  "related_types": ["medical-bill", "auto-insurance", "life-insurance", "tax-letter"],
+  "generated_at": "2026-05-04T00:00:00Z",
+  "generated_by": "seed"
+}

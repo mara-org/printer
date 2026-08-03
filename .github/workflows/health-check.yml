@@ -32,7 +32,7 @@ jobs:
           [ "$fails" -lt 3 ]
       - name: Open issue on 3/3 fail
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = `health-check: ${process.env.TARGET_URL} failing`;
