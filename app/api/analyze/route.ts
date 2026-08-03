@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   if (!tsOk) return NextResponse.json({ error: "turnstile_failed" }, { status: 403 });
 
   // 4. Auth.
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();

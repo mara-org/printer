@@ -10,7 +10,7 @@ export async function Header({
   locale?: string;
   pathForLocaleSwitch?: string;
 } = {}) {
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();

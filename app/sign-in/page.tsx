@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 export default async function SignInPage() {
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();
