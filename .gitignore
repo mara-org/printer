@@ -14,3 +14,4 @@ next-env.d.ts
 coverage
 playwright-report
 test-results
+VERCEL_ENV_PASTE.txt

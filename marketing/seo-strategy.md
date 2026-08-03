@@ -29,7 +29,7 @@ ar, hi, id, vi, th, ru.
 
 12 × 20 = 240 pages, each:
 - Title: "How to read a {document-type} (in plain {language})"
-- 800-1200 words of original content (Claude generates; no human review
+- 800-1200 words of original content (Gemini generates; no human review
   step — instead, an LLM-as-judge cron re-evaluates each page monthly
   against a quality rubric and flags pages below threshold for regen)
 - Embedded mini-analyzer: paste an excerpt, get a free summary, no signup
@@ -39,7 +39,7 @@ ar, hi, id, vi, th, ru.
 - hreflang tags between locale variants
 
 Generation is fully automated by `/api/cron/generate-pseo-pages`:
-Claude writes 5 pages/week, opens an auto-PR, CI runs lint + LLM-as-judge
+Gemini writes 5 pages/week, opens an auto-PR, CI runs lint + LLM-as-judge
 quality gate, auto-merges if both pass. After 240 pages the cron switches
 to refreshing the oldest pages monthly.
 
@@ -64,7 +64,7 @@ Instead, links accrue from automated, value-creating surfaces:
 
 - **Affiliate program at `/affiliates`**: anyone (including bloggers,
   YouTubers, NGOs) self-onboards, gets `?ref=` link, 30% rev-share
-  for 6 months via Stripe Connect. Bloggers organically link.
+  for 6 months via Polar affiliates. Bloggers organically link.
 - **Free embeddable widget at `/embed`**: any site can drop a
   `<script>` tag and offer a 1-doc analyzer to their readers. The
   widget includes a backlink. NGOs and tenant-rights orgs adopt it
@@ -116,7 +116,7 @@ Localize per market. Examples:
 - Weeks 6–8: `/api/cron/aso-keyword-update` adds locales in waves via
   the App Store Connect API + Google Play Developer API. No app
   binary changes needed for metadata updates after the first one.
-- Weekly: the cron pulls AppFigures rankings, asks Claude for the
+- Weekly: the cron pulls AppFigures rankings, asks Gemini for the
   weakest keyword per locale, replaces it via the store APIs, and
   records the swap in Supabase `aso_keyword_history` for attribution.
 - Screenshots are auto-rendered: a Next.js route renders the marketing
@@ -125,7 +125,7 @@ Localize per market. Examples:
 
 ## Reporting
 
-Weekly dashboard (Looker / PostHog):
+Weekly dashboard (Looker / Vercel Analytics):
 - Organic search clicks per locale
 - App Store impressions / installs per locale
 - Programmatic page → signup conversion

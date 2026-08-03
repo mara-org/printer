@@ -10,7 +10,7 @@ questions, and benchmarks.
    AI + scheduled jobs + platform APIs.
 2. **Free until revenue.** Every component runs on a free tier until
    paid users justify upgrading that one component. No card on file
-   except Stripe (incoming) and Apple Developer (already paid).
+   except Polar (incoming payments) and Apple Developer (already paid).
 3. **CI/CD from day one, designed to last forever.** Every change is
    gated by automated checks; every cron has a kill switch; every
    external dependency has a circuit breaker.
@@ -33,12 +33,57 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 
 ## North star
 
-- **Month 6:** $5K MRR (~700 paid users at $6.99)
-- **Month 12:** $20K MRR ($240K ARR)
-- **Month 24:** $80K MRR ($960K ARR) via tiered pricing + app stores
-- **$1M ARR path:** B2C alone gets us to ~$500K. The second $500K is the Power
-  tier ($14.99) for power users + a thin self-serve API for partners. Both
-  ship as automated upgrades — no sales calls, no contracts.
+- **Month 6:** $5K MRR
+- **Month 12:** $25K MRR (~$300K ARR)
+- **Month 18:** $55K MRR (~$660K ARR) — Teams + API tiers ramp
+- **Month 24:** **$85K MRR (~$1.02M ARR)** — embed partners come online
+
+## How $1M actually breaks down (revenue stack)
+
+We do not get to $1M from one $6.99 plan. We layer five revenue streams,
+each automated, each unlocking on a measured trigger:
+
+| Stream | Plan | Target users | MRR target at Y2 | % of $1M |
+|---|---|---|---|---|
+| **B2C subs** | Pro $6.99 + Lifetime $79 | Renters, freelancers, immigrants, patients | $30K MRR (~4,300 Pro + 200 lifetime/mo) | 35% |
+| **B2C Power** | $14.99/mo, +50pg, bulk, API access | Immigration consultants, small landlords, freelance lawyers | $15K MRR (~1,000 Power) | 18% |
+| **Teams** | $29/mo flat (5 seats), $5/seat after | 2–10 person property mgmt, doctor offices, HR teams | $15K MRR (~500 Teams) | 18% |
+| **API** | Self-serve $99/mo (10K docs) and $499/mo (100K docs) | Rental platforms, insurance brokers, fintech onboarding | $20K MRR (~150×$99 + 12×$499) | 23% |
+| **Embed partners** | White-label widget; rev-share or $1K/mo flat | SaaS that wants "explain my doc" inside their app | $5K MRR (~10 partners) | 6% |
+| **Total Y2** | | | **~$85K MRR ≈ $1.02M ARR** | 100% |
+
+Annual plans (20% off) move ~30% of new B2C signups, lifting cash
+collected and lowering monthly churn. They ship as a separate Polar
+product alongside the monthly product in the next sprint.
+
+## Triggers that unlock each stream
+
+- **Pro/Lifetime**: shipped at week 4 (current sprint).
+- **Power $14.99**: shipped same day; pushed to power-users via email
+  trigger `analyzed_3_in_one_month`.
+- **Teams $29**: ships at $5K MRR. Why: by then we have proof a single
+  user paid; bundling 5 seats is the obvious next ask. Polar affiliates
+  not needed; just `quantity` on a subscription line.
+- **Self-serve API**: ships at $10K MRR. Adds a single page, an API
+  key issuer, and per-key rate limits in Upstash. The endpoint is the
+  same `/api/analyze` we already built.
+- **Embed widget**: ships at $20K MRR. A `<script>` snippet partners
+  drop into their own apps; revenue is rev-share via Polar affiliates or
+  a flat license. Distribution comes from us reaching out to the SaaS
+  companies whose users are already analyzing leases / contracts /
+  insurance docs through our affiliate program.
+
+Every trigger is a feature flag in `app_config`. No quarterly planning
+meetings — when MRR crosses the threshold, the cron flips the flag.
+
+## Why this hits $1M when v1 doesn't
+
+The original plan rested entirely on one $6.99 plan to ~12,000 users.
+That's a 4-year solo grind for a category with high churn. The five-
+stream version reaches $1M with **6,500 users at any tier**, of which
+most pay $14.99+ — far more achievable on the same SEO + ASO + short-
+form distribution. The B2B streams (API + Embed) carry 29% of revenue
+on ~170 customers; small numbers, real leverage.
 
 ## Free-first stack (locked)
 
@@ -50,20 +95,19 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 | Auth | Supabase Auth | 50K MAU | Beyond 50K |
 | DB | Supabase Postgres | 500 MB | Tighten storage; upgrade at ~10K paying |
 | Storage | Supabase Storage | 1 GB | Delete uploaded files immediately after analysis (free tier); keep 30 days only for paid |
-| **AI — free tier** | **Google Gemini 2.5 Flash** (vision-capable) | 1500 docs/day, 1M context | Hit ceiling = good problem |
-| **AI — paid tier** | Anthropic `claude-sonnet-4-6`; `opus-4-7` for >10pg | Hard monthly spend cap in Anthropic Console | Cap rises with MRR |
-| **AI — fallback** | Hugging Face Inference (Llama-3.2-Vision, Qwen2-VL) via authed `justabdulaziz10` | Monthly free credits | Used only when Gemini quota exhausts mid-day |
-| Payments | Stripe live (Pro $6.99/mo, Power $14.99/mo, Lifetime $79) | Pay-as-you-go fees only | n/a |
-| Stripe Tax | On from day 1 — auto-collects + remits VAT/sales tax | Per-txn fee | n/a |
+| **AI (all tiers)** | **Google Gemini 2.5 Flash** (vision-capable, 1M context) | 1500 docs/day on free key | Paid Gemini tier 1 unlocks at ~$0.001/doc; cap set in Google Cloud billing |
+| **AI — fallback** | Hugging Face Inference (Llama-3.2-Vision, Qwen2-VL) via authed `justabdulaziz10` | Monthly free credits | Auto-routed only when Gemini quota exhausts mid-day |
+| Payments | **Polar.sh** (Merchant of Record; KSA-friendly) — Pro $6.99/mo, Power $14.99/mo, Lifetime $79 | ~4% + $0.40/txn; no monthly fee | n/a |
+| Tax handling | Polar handles VAT/sales tax in 80+ countries automatically as the MoR | Included in Polar fee | n/a |
 | Email outbound | Resend | 3K/mo, 100/day | Move to Brevo or upgrade Resend at ~5K MAU |
-| Email inbound | Resend Inbound webhook → Claude reply | Free | n/a |
+| Email inbound | Resend Inbound webhook → Gemini reply | Free | n/a |
 | Voice (TTS) | **Microsoft Edge TTS** (`edge-tts` lib) — no key needed | Unlimited | Move to ElevenLabs only after MRR > $5K, optional |
 | B-roll / stock | Pexels + Pixabay + Unsplash APIs | Free, generous | n/a |
 | Video render | ShortGPT or moviepy on GitHub Actions runners | Free (public repo = unlimited mins) | n/a |
 | Bot protection | Cloudflare Turnstile | Free, no limit | n/a |
 | Rate limit cache | Upstash Redis | 10K cmd/day | At ~5K active users |
 | Errors | Sentry | 5K events/mo | At ~5K users |
-| Analytics | PostHog | 1M events/mo | Probably never |
+| Analytics | Vercel Analytics | 2.5K events/mo on Hobby | Probably never |
 | **Cron / schedulers** | **GitHub Actions on the public repo** | **Unlimited free minutes** for public repos | Never |
 | CI/CD | GitHub Actions + Vercel Git integration | Free for public repos | Never |
 | Secret scan | gitleaks GitHub Action | Free | n/a |
@@ -73,10 +117,20 @@ de aluguel" finds us, not a US-only tool. This is the wedge.
 | Native Android | PWA on web only for v1; Google Play later when revenue justifies $25 one-time | Free | First $25 of MRR |
 | ASO data | App Store Connect API + Google Play Developer API directly (free) | Free | Skip AppFigures entirely |
 
-**Tiered AI cost model:** free PaperLens users → Gemini 2.5 Flash (Google
-free tier, $0 to us). Paid users → Claude Sonnet 4.6 (better quality,
-$6.99 covers it many times over). The `analyze` route picks the provider
-from `users.tier` at call time. Free users **literally cannot cost us money**.
+**One-model AI cost model:** every analyze call goes to Gemini 2.5 Flash,
+regardless of user tier. Tier differentiation is done by **features +
+quota**, not model quality:
+
+| Tier | Quota | Features |
+|------|-------|----------|
+| Free | 3 docs/month | Standard parsing, 1 follow-up Q, watermarked export, queued (lower priority) |
+| Pro $6.99/mo | Unlimited | + unlimited follow-ups, multilingual export, history search, no watermark, priority queue |
+| Power $14.99/mo | Unlimited | + 50+ page docs, bulk upload (10 at once), API access, side-by-side compare |
+| Lifetime $79 | Unlimited | Pro features, one-time payment |
+
+Cost per analysis on Gemini 2.5 Flash (paid tier 1): ~$0.001 per
+document at typical lengths. 50,000 paying users × 2 docs/mo = $100/mo
+total AI bill. Margin on Pro alone is >99%.
 
 ## Why we host crons on GitHub Actions, not Vercel Cron
 
@@ -120,24 +174,24 @@ Branch protection on `main` requires all of the above to pass.
 | Vercel auto-deploy | Vercel Git integration | Vercel rolls back automatically on build fail |
 | `/api/health` probe every 5 min | `health-check.yml` | After 3 consecutive fails: open GitHub issue + post Sentry event + Vercel alias rollback |
 | Synthetic analyze probe every 1 hr | `synthetic.yml` | Submits a known PDF, asserts JSON shape; fails open issue |
-| External-API contract tests | `contract-tests.yml` nightly | Detects breaking changes in Gemini/Stripe/Supabase APIs before they break prod |
+| External-API contract tests | `contract-tests.yml` nightly | Detects breaking changes in Gemini/Polar/Supabase APIs before they break prod |
 
 ### Spend safety (the "never lose money" layer)
 
 | Control | Where | Effect |
 |---------|-------|--------|
-| Anthropic monthly hard cap | Anthropic Console | Server-side ceiling; cannot be exceeded |
+| Google Cloud billing budget alert + cap | Google Cloud Console → Billing → Budgets | Hard monthly cap, e.g. $30; sends webhook to `/api/cron/cost-cap` at 50/90/100% |
 | Vercel spend cap | Vercel team Spend Mgmt | Project pauses at threshold, no billing past it |
 | Supabase: no card on file | Supabase Settings | Free tier overages get hard-capped, not billed |
-| `cost-cap.yml` cron hourly | GitHub Actions → `/api/cron/cost-cap` | Reads Anthropic Usage API, flips `ANALYZE_PAUSED=true` Supabase config row if budget burn > prorated daily allowance |
-| Free-tier users → Gemini only | `lib/ai/router.ts` | Free users cannot trigger Anthropic spend |
-| File size + page count gate | `app/api/analyze/route.ts` | Reject >20 MB or >50 pages on free tier |
-| Per-user quota | Supabase RLS + atomic `select … for update` | Free = 3 docs/mo enforced atomically |
+| `cost-cap.yml` cron hourly | GitHub Actions → `/api/cron/cost-cap` | Reads our own `analyze_calls` Supabase counter; flips `ANALYZE_PAUSED=true` if today's spend > daily-budget/30 |
+| Free-tier per-user quota | Supabase RLS + atomic `select … for update` | Free = 3 docs/mo enforced atomically; cannot exceed |
+| File size + page count gate | `app/api/analyze/route.ts` | Reject >20 MB or >50 pages on free tier; >100 pages on paid |
 | IP rate limit | Upstash Redis | 5 analyze req / IP / hour |
 | Cloudflare Turnstile | Sign-up + upload form | Bot floods blocked at the edge |
+| Hugging Face fallback for free tier | `lib/ai/Provider.ts` | When Gemini quota exhausts, free-tier requests degrade to HF (also free) instead of paying |
 
-If every layer above fails, the **Anthropic Console cap** is the floor.
-You will never be billed more than that.
+If every layer above fails, the **Google Cloud billing budget cap** is
+the floor. You will never be billed more than that.
 
 ### Self-healing rules
 
@@ -169,16 +223,16 @@ You will never be billed more than that.
 ### Bus factor
 
 If the founder is unavailable for 30 days the system continues to:
-- accept paying customers (Stripe Checkout)
-- analyze documents (free tier on Gemini, paid on Claude)
+- accept paying customers (Polar checkout)
+- analyze documents (Gemini 2.5 Flash for all tiers)
 - send lifecycle emails
 - post short-form video
 - generate SEO pages
-- handle inbound email via Claude
+- handle inbound email via Gemini
 
 Things that pause without a human:
 - Apple/Google review replies (rare)
-- Stripe disputes > $500 (auto-routed to inbox; no auto-action)
+- Polar disputes > $500 (auto-routed to inbox; no auto-action)
 
 Bus factor is "1 founder, but fine for a month."
 
@@ -190,20 +244,20 @@ Every recurring task is a GitHub Actions workflow under
 
 | Cron | Schedule | What it does |
 |------|----------|--------------|
-| `cost-cap` | hourly | Polls Anthropic Usage API; pauses analyze if over |
+| `cost-cap` | hourly | Reads internal `analyze_calls` counter + Google Cloud billing budget; pauses analyze if over daily prorated allowance |
 | `lifecycle-emails` | every 1h | Sends Day-N emails via Resend |
-| `inbound-mail-reply` | on Resend webhook | Claude reads inbound, sends reply, logs thread |
+| `inbound-mail-reply` | on Resend webhook | Gemini reads inbound, sends reply, logs thread |
 | `generate-pseo-pages` | weekly Sun 03:00 UTC | 5 new locale×doctype pages, auto-PR + auto-merge if CI passes |
 | `refresh-pseo-pages` | monthly | Re-runs pages > 90 days against latest model |
-| `short-form-batch` | daily 06:00 UTC | Script (Claude) → voice (Edge TTS) → render (ShortGPT) → post (TikTok/IG/YT APIs) |
+| `short-form-batch` | daily 06:00 UTC | Script (Gemini) → voice (Edge TTS) → render (ShortGPT) → post (TikTok/IG/YT APIs) |
 | `reddit-watch` | every 15 min | Polls subs for keyword matches, drafts value-first reply, posts via Reddit API per quota |
 | `x-thread` | daily 12:00 UTC | Posts daily thread via X API Free tier (500 posts/mo) |
 | `aso-keyword-update` | weekly | Pulls App Store Connect rankings, swaps weakest keyword per locale |
-| `dispute-auto-handler` | on Stripe webhook | Auto-refunds first-time disputes < $20; escalates rest |
-| `weekly-digest` | Sun 18:00 UTC | Aggregates funnels + drop-offs, opens GH issues with Claude-suggested patches |
+| `dispute-auto-handler` | on Polar webhook | Auto-refunds first-time disputes < $20; escalates rest |
+| `weekly-digest` | Sun 18:00 UTC | Aggregates funnels + drop-offs, opens GH issues with Gemini-suggested patches |
 | `health-check` | every 5 min | Hits `/api/health`; on fail, alerts + auto-rollback |
 | `synthetic-analyze` | hourly | End-to-end probe with known PDF |
-| `contract-tests` | nightly | Pings Gemini/Stripe/Supabase APIs to detect breaking changes |
+| `contract-tests` | nightly | Pings Gemini/Polar/Supabase APIs to detect breaking changes |
 
 ## What the founder does (one-time setup, not staffing)
 
@@ -212,19 +266,21 @@ never recur:
 
 1. ~~Buy domain~~ — using `printer-olive.vercel.app` until revenue.
 2. ✅ Apple Developer (already have).
-3. Provision API keys: Anthropic, Resend, Stripe (live, ✅ products
-   already created), PostHog, Sentry, Pexels, Cloudflare Turnstile,
+3. Provision API keys: **Gemini** (the critical one — aistudio.google.com,
+   free, instant), Resend, **Polar.sh** (KSA-friendly MoR; products
+   created in the next sprint), Sentry, Pexels, Cloudflare Turnstile,
    TikTok Developer, IG Graph API, YouTube Data, Reddit, X Free tier,
-   Apple Search Ads, Upstash Redis. **Gemini API key is the critical
-   one** — get it from aistudio.google.com (free, instant).
-4. Set hard spend cap on Anthropic Console.
+   Apple Search Ads, Upstash Redis, Hugging Face (already authed via
+   `justabdulaziz10`). Vercel Analytics is enabled in the Vercel
+   dashboard with one click — no key needed.
+4. Set Google Cloud billing budget + hard cap on the Gemini API project.
 5. Confirm no card on file at Supabase (= can't be billed).
 6. Approve `KILL_SWITCH` env var defaults across Vercel + GitHub.
-7. Stripe: set Business Name to "PaperLens" (unblocks Payment Links),
-   enable Stripe Tax.
+7. Polar: create the organization, set display name to "PaperLens",
+   add a payout method. Polar handles VAT/sales tax automatically.
 
 After that the system runs without further founder involvement except
-for catastrophic alerts (Sentry P1, Stripe dispute > $500), platform
+for catastrophic alerts (Sentry P1, Polar dispute > $500), platform
 suspensions, and tax/legal mail. Expected: **~30 min/week** at steady
 state.
 
@@ -236,7 +292,7 @@ impersonation, TOS violations, or unrealistic ongoing review:
 - Hacker News Show HN posts (no API, bot accounts banned)
 - Product Hunt manual launches (needs hunter + live comment presence)
 - 1:1 influencer DMs (replaced by self-serve affiliate program at
-  `/affiliates`, payouts via Stripe Connect)
+  `/affiliates`, payouts via Polar affiliates)
 - Cold press pitches (replaced by SEO + paid)
 - Live customer-support chat (replaced by AI email + AI in-app chat)
 
@@ -245,10 +301,11 @@ If a channel needs a human face, it is not here.
 ## 12-week build (every week ends with green CI on every change)
 
 ### Week 0 — CI/CD scaffold + spend safety (1 day)
-- ✅ Stripe products live, Supabase schema, waitlist API.
+- ✅ Supabase schema, waitlist API, analyze pipeline. Polar products
+  created in week 4.
 - ✅ GitHub Actions CI/CD scaffold (`ci.yml`, `e2e.yml`, `secret-scan.yml`,
   `health-check.yml`, `cron-cost-cap.yml`, `dependabot.yml`).
-- Founder sets Anthropic spend cap.
+- Founder sets Google Cloud billing budget cap on the Gemini project.
 - All future PRs gated by green CI.
 
 ### Week 1 — Landing + waitlist + first crons
@@ -257,7 +314,7 @@ If a channel needs a human face, it is not here.
 - 5 locales: EN, ES, PT-BR, DE, FR.
 - `cron-cost-cap` and `cron-lifecycle-emails` go live.
 - Goal: 200 waitlist signups by end of week 1 from organic SEO seeding
-  (Claude generates 25 PSEO pages on day 1 to start indexing).
+  (Gemini generates 25 PSEO pages on day 1 to start indexing).
 
 ### Weeks 2-3 — Core analyze pipeline (free + paid tiers)
 - Supabase Auth (email + Google OAuth) + Cloudflare Turnstile on signup.
@@ -271,27 +328,27 @@ If a channel needs a human face, it is not here.
   - Per-class structured prompt → JSON: summary, risks, questions, terms
   - Render in user's locale with cultural context
 - Follow-up Q&A on the parsed doc (cached context, prompt caching ON
-  for Claude path).
+  for Gemini path).
 - Auto-purge uploads after analysis on free tier; 30 days on paid.
 
 ### Week 4 — Payments + 5 more locales
-- Stripe Checkout + webhook → Supabase `subscriptions`.
+- Polar checkout + webhook → Supabase `subscriptions`.
 - Customer portal on. Auto-refund cron on.
-- Stripe Tax on. Business Name set.
+- Polar tax handling on. Business Name set.
 - 5 more locales: IT, NL, PL, JA, KO.
 - Soft launch via Resend campaign cron.
 
 ### Week 5 — iOS via Capacitor (Apple Dev already in hand)
 - Capacitor wrap of the PWA → submit to App Store via
   App Store Connect API.
-- Title/subtitle/keywords localized per locale (Claude-generated).
+- Title/subtitle/keywords localized per locale (Gemini-generated).
 - Screenshots auto-rendered via Playwright on GitHub Actions.
 
 ### Weeks 6-8 — Programmatic SEO autopilot
 - `cron-generate-pseo-pages` engine: 5 new pages/week.
 - Each page: 800-1200 words, embedded mini-analyzer, schema.org markup,
-  hreflang. Claude drafts; CI lints; LLM-as-judge quality gate; auto-merge.
-- Affiliate program at `/affiliates` (Stripe Connect).
+  hreflang. Gemini drafts; CI lints; LLM-as-judge quality gate; auto-merge.
+- Affiliate program at `/affiliates` (Polar affiliates).
 
 ### Weeks 9-12 — Automated short-form + paid acquisition
 - `cron-short-form-batch` produces 9 vertical videos/day on GitHub
@@ -303,11 +360,11 @@ If a channel needs a human face, it is not here.
 
 | Channel | % of effort | Tools (all free tiers) |
 |---------|-------------|------------------------|
-| Programmatic SEO | 35% | Claude (paid users only — system prompt cached) + GitHub Actions cron |
+| Programmatic SEO | 35% | Gemini (paid users only — system prompt cached) + GitHub Actions cron |
 | App Store SEO | 25% | App Store Connect API + Google Play Dev API |
-| Short-form video | 25% | Claude script + **Edge TTS** + ShortGPT + Pexels + TikTok/IG/YT APIs |
-| Reddit value posts | 5% | Reddit API + Claude |
-| Affiliate program | 10% | Stripe Connect |
+| Short-form video | 25% | Gemini script + **Edge TTS** + ShortGPT + Pexels + TikTok/IG/YT APIs |
+| Reddit value posts | 5% | Reddit API + Gemini |
+| Affiliate program | 10% | Polar affiliates |
 | Paid (post-PMF) | 0% till MRR > $5K | Apple Search Ads API, Google Ads API |
 
 20 priority locales: EN-US, EN-GB, ES, ES-MX, PT-BR, DE, FR, IT, NL,
@@ -319,12 +376,12 @@ PL, JA, KO, ZH-TW, TR, AR, HI, ID, VI, TH, RU. Skip ZH-CN (App Store
 | Phase | Hard cap | Source of cost |
 |-------|----------|----------------|
 | Pre-launch | **$0** | All free tiers; Apple Dev already paid |
-| Months 1-2 | **$0–$10/mo** | Possibly paid Anthropic for first dozen paying-tier analyses |
-| Months 3-4 | **$30/mo** | Anthropic spend covering paid users; everything else still free |
-| Months 5-6 | **$200/mo**, only if MRR > $5K | Anthropic + maybe upgrade Resend |
-| Year 2 | scales linearly with MRR; gross margin target ≥ 85% | Anthropic + Stripe fees |
+| Months 1-2 | **$0–$10/mo** | Possibly paid Google for first dozen paying-tier analyses |
+| Months 3-4 | **$5–$30/mo** | Gemini paid tier 1 covering paid-user volume; everything else still free |
+| Months 5-6 | **$200/mo**, only if MRR > $5K | Google + maybe upgrade Resend |
+| Year 2 | scales linearly with MRR; gross margin target ≥ 85% | Google + Polar fees |
 
-`cost-cap` cron + Anthropic Console cap enforce the ceilings.
+`cost-cap` cron + Google Cloud billing budget enforce the ceilings.
 `Free user → Gemini` rule ensures free signups cannot cost us money.
 
 ## Kill criteria
@@ -339,16 +396,18 @@ revisits. Don't grind on a dead pony.
 
 ## Honest limits of "free + automated forever"
 
-- **Gemini quality gap.** Free-tier analyses (Gemini 2.5 Flash) are
-  good but not Claude-level. Free users get a "Pro for $6.99 unlocks
-  Claude Sonnet" prompt on every analysis. This is a feature, not a bug.
+- **No quality moat from the model itself.** We use Gemini 2.5 Flash
+  for every tier; competitors can use the same model. The moat is
+  localized SEO + recurring use + workflow polish, not raw AI quality.
+  If Google deprecates the free tier we fall back to Hugging Face for
+  free users without a code change.
 - **Platform suspensions** still happen. Each platform has a human-only
   appeal flow. Budget 1-2 hours/quarter for appeals.
-- **Stripe disputes > $500** auto-route to founder review.
-- **Tax filings.** Stripe Tax handles VAT and US sales tax registrations
+- **Polar disputes > $500** auto-route to founder review.
+- **Tax filings.** Polar tax handling handles VAT and US sales tax registrations
   in most jurisdictions; year-end filings need an accountant or TurboTax.
 - **Apple/Google review rejections** sometimes need a written reply
-  from the publisher. Claude drafts; founder pastes.
+  from the publisher. Gemini drafts; founder pastes.
 - **Solo B2C** is harder than solo B2B: lower LTV, higher churn. We
   compensate with App Store SEO + programmatic SEO + low CAC.
 - **$1M ARR in year 1 is rare.** Plan for $240K year 1 and the $1M

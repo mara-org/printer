@@ -9,10 +9,9 @@
   - URL: `https://qcrrfisswbaecuipcatr.supabase.co`
   - Schema: waitlist, profiles, documents, analyses, subscriptions
   - RLS on every user table; anon allowed only to insert into waitlist
-- **Stripe products + prices (LIVE)**
-  - Pro $6.99/mo — `price_1TSZRk7iHZBeOOe5xY3ak1Yy`
-  - Lifetime $79 — `price_1TSZRn7iHZBeOOe5QfKbH5gB`
-  - Power $14.99/mo — `price_1TSZRp7iHZBeOOe5YNBBoKFB`
+- **Polar.sh** — to be set up by the founder; products created in the
+  next sprint. Polar is the Merchant of Record (handles VAT in 80+
+  countries, accepts Saudi sellers, ~4% + $0.40 per transaction).
 - **Apple Developer account** ($99/yr) — already in hand.
 
 ## Free-first stack confirmation
@@ -21,8 +20,8 @@ Every paid component has a free path. Until MRR justifies upgrades:
 
 | Need | Free path | Trigger to upgrade |
 |------|-----------|--------------------|
-| AI for free-tier users | Google Gemini 2.5 Flash (1500 docs/day) | n/a — never costs us |
-| AI for paid-tier users | Claude Sonnet 4.6 with monthly cap | Cap rises with MRR |
+| AI for **all** tiers | Google Gemini 2.5 Flash (1500 docs/day on free key) | Auto-upgrade to paid Gemini tier 1 (~$0.001/doc) when free quota exhausts; capped via Google Cloud Billing budget |
+| AI fallback | Hugging Face Inference (already authed as `justabdulaziz10`) | Auto-routed when Gemini unavailable |
 | Hosting | Vercel | ~50K MAU |
 | DB / auth / storage | Supabase free | ~10K paying users |
 | Email | Resend free (3K/mo) | ~5K MAU |
@@ -30,7 +29,7 @@ Every paid component has a free path. Until MRR justifies upgrades:
 | Stock video | Pexels + Pixabay + Unsplash | n/a |
 | Cron / CI | GitHub Actions on public repo (unlimited) | Never |
 | Errors | Sentry free (5K/mo) | ~5K users |
-| Analytics | PostHog free (1M/mo) | Probably never |
+| Analytics | Vercel Analytics (built-in, free Hobby tier) | Probably never |
 | Bot protection | Cloudflare Turnstile | Never |
 | Domain | `printer-olive.vercel.app` | First $20 MRR → buy `paperlens.app` |
 | Native iOS | Capacitor + existing Apple Dev account | n/a (already paid) |
@@ -46,17 +45,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
 
 Add as each cron / feature ships:
 ```
-# Stripe
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_STRIPE_PRICE_PRO=price_1TSZRk7iHZBeOOe5xY3ak1Yy
-NEXT_PUBLIC_STRIPE_PRICE_LIFETIME=price_1TSZRn7iHZBeOOe5QfKbH5gB
-NEXT_PUBLIC_STRIPE_PRICE_POWER=price_1TSZRp7iHZBeOOe5YNBBoKFB
+# Polar (Merchant of Record; KSA-friendly)
+POLAR_ACCESS_TOKEN=polar_oat_...
+POLAR_WEBHOOK_SECRET=polar_whsec_...
+POLAR_ORG_ID=
+NEXT_PUBLIC_POLAR_PRODUCT_PRO=
+NEXT_PUBLIC_POLAR_PRODUCT_LIFETIME=
+NEXT_PUBLIC_POLAR_PRODUCT_POWER=
 
-# AI
+# AI (Gemini for all tiers; HF as fallback)
 GEMINI_API_KEY=...                     # aistudio.google.com (FREE, instant)
-ANTHROPIC_API_KEY=sk-ant-...           # paid users only
-HUGGINGFACE_TOKEN=hf_...               # already authed as justabdulaziz10
+HUGGINGFACE_TOKEN=hf_...               # fallback when Gemini unavailable
 
 # Email
 RESEND_API_KEY=re_...
@@ -87,17 +86,22 @@ GH Actions itself needs is `CRON_SECRET`.
 
 ## Spend safety setup (do these once)
 
-1. **Anthropic Console** → Settings → Billing → Limits → set monthly
-   hard cap (e.g. **$30**). This is the absolute ceiling.
+1. **Google Cloud Console** → Billing → Budgets & alerts → create a
+   budget on the Gemini API project (e.g. **$30/month**) with alerts
+   at 50/90/100% AND **"Cap project at 100%"** enabled. This is the
+   absolute ceiling for AI cost.
 2. **Vercel** → Settings → Spend Management → hard cap (e.g. **$20**).
    Project pauses at threshold; no overage billing.
 3. **Supabase** → confirm no card on file (free tier overages get
    capped, not billed).
-4. **Stripe** → Settings → set Business Name to "PaperLens" (unblocks
-   Payment Links), enable Stripe Tax.
+4. **Polar.sh** → create your organization, set the display name to
+   "PaperLens", add a payout method. As the Merchant of Record, Polar
+   collects + remits VAT/sales tax automatically — nothing else to flip.
 
 After step 4, **the maximum the system can ever cost is ~$50/month**
-even under total abuse. Layered defenses below mean real cost is ~$0.
+even under total abuse. Layered defenses below mean real cost is ~$0
+until paid users justify Gemini paid tier. At realistic Gemini paid-tier
+volumes ($0.001/doc), 30,000 paying users at 2 docs/mo = $60/mo total.
 
 ## CI/CD pipeline
 

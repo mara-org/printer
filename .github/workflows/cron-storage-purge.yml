@@ -1,0 +1,48 @@
+name: cron-storage-purge
+
+on:
+  schedule:
+    - cron: "30 3 * * *"  # 03:30 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TARGET_URL: https://printer-olive.vercel.app
+
+jobs:
+  purge:
+    name: purge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call storage-purge route
+        id: call
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set +e
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "CRON_SECRET not set; skipping"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/out -w '%{http_code}' \
+            -H "x-cron-secret: $CRON_SECRET" \
+            "$TARGET_URL/api/cron/storage-purge")
+          cat /tmp/out
+          echo
+          [ "$code" = "200" ] || [ "$code" = "404" ]
+      - name: Alert on real failure
+        if: failure() && steps.call.outputs.skipped != 'true'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "cron-storage-purge failing",
+              labels: ["incident", "auto", "cron"],
+              body: `Run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            });
